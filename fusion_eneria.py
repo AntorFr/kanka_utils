@@ -92,8 +92,45 @@ def charger_json_depuis_fichier(chemin_fichier):
         print(f"[ERREUR] {chemin_fichier} : {e}")
         return None
 
-def est_prive(contenu):
-    return contenu.get("is_private") == 1 or contenu.get("visibility_id") == 2
+def marquer_et_tester_prive(obj):
+    """Parcourt récursivement l'objet. Marque les sous-éléments 'prive': True si privé."""
+    if isinstance(obj, dict):
+        if obj.get("is_private") == 1 or obj.get("visibility_id") == 2:
+            obj["prive"] = True
+        for v in obj.values():
+            marquer_et_tester_prive(v)
+    elif isinstance(obj, list):
+        for e in obj:
+            marquer_et_tester_prive(e)
+
+def formater_texte(obj, prefix=""):
+    if isinstance(obj, dict):
+        lignes = []
+        for k, v in obj.items():
+            if isinstance(v, (dict, list)):
+                sous_texte = formater_texte(v, prefix + "  ")
+                lignes.append(f"{prefix}{k} :\n{sous_texte}")
+            else:
+                lignes.append(f"{prefix}{k} : {v}")
+        return "\n".join(lignes)
+    elif isinstance(obj, list):
+        return "\n".join(f"{prefix}- {formater_texte(v, prefix + '  ')}" for v in obj)
+    else:
+        return f"{prefix}{obj}"
+
+def supprimer_objets_prives(obj):
+    if isinstance(obj, dict):
+        if obj.get("prive"):
+            return None
+        result = {}
+        for k, v in obj.items():
+            v_filtré = supprimer_objets_prives(v)
+            if v_filtré is not None:
+                result[k] = v_filtré
+        return result if result else None
+    elif isinstance(obj, list):
+        return [e for e in (supprimer_objets_prives(e) for e in obj) if e is not None]
+    return obj
 
 def charger_et_structurer_json(dossier):
     hiérarchie_filtrée = {}
@@ -113,7 +150,8 @@ def charger_et_structurer_json(dossier):
                 if categorie in IGNORER_CATEGORIES:
                     continue
 
-                prive = est_prive(contenu)
+                prive = marquer_et_tester_prive(contenu)
+                
                 contenu_complet = {"type": categorie, **contenu, "prive": prive}
                 contenu_filtré = filtrer_champs_utiles_recursive(contenu_complet)
 
@@ -122,18 +160,25 @@ def charger_et_structurer_json(dossier):
                     hiérarchie_filtrée.setdefault(categorie, []).append(contenu_filtré)
 
                 nom = contenu.get("name") or contenu.get("nom") or file.replace(".json", "")
-                texte = contenu.get("description") or contenu.get("contenu") or json.dumps(contenu_filtré or contenu_complet)
+                texte_filtré_public = supprimer_objets_prives(contenu_filtré or contenu_complet)
+              
+                texte_prive = contenu.get("description") or contenu.get("contenu") or formater_texte(contenu_filtré or contenu_complet)
+                texte_public = contenu.get("description") or contenu.get("contenu") or formater_texte(texte_filtré_public)
 
                 ligne = {
                     "type": categorie,
                     "nom": nom,
-                    "contenu": texte,
-                    "prive": prive
+                    "contenu": texte_prive,
                 }
 
                 aplat_prive.append(ligne)
-                if not prive:
-                    aplat_public.append(ligne)
+
+                ligne_public = {
+                    "type": categorie,
+                    "nom": nom,
+                    "contenu": texte_public
+                }
+                aplat_public.append(ligne_public)
 
     return hiérarchie_complete, hiérarchie_filtrée, aplat_prive, aplat_public
 
