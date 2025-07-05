@@ -1,0 +1,22 @@
+# fichiers Python compilés
+__pycache__/
+*.pyc
+
+# fichiers d'export et outputs
+univers_eneria_complet.json
+univers_eneria_filtered.json
+univers_eneria_connaissance_privee.jsonl
+univers_eneria_connaissance_publique.jsonl
+
+# fichiers temporaires
+*.tmp
+*.log
+
+# dossiers temporaires éventuels
+eneria_*/
+
+# fichiers ZIP
+*.zip
+
+# fichiers système Mac
+.DS_Store
