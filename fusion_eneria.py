@@ -39,6 +39,14 @@ def extraire_zip(chemin_zip, dossier_temporaire):
         zip_ref.extractall(dossier_temporaire)
     return dossier_temporaire
 
+
+
+    if not isinstance(html, str):
+        return html
+    texte = re.sub(r'<[^>]+>', '', html)
+    return unescape(texte).strip()
+
+
 def normaliser_categorie(chemin_fichier):
     parties = os.path.normpath(chemin_fichier).split(os.sep)
     for i in range(len(parties) - 1, 0, -1):
@@ -47,48 +55,6 @@ def normaliser_categorie(chemin_fichier):
             return CATEGORIE_MAP.get(dossier_categorie, dossier_categorie)
     return CATEGORIE_MAP.get(parties[-2], parties[-2])
 
-def nettoyer_html(html):
-    if not isinstance(html, str):
-        return html
-    texte = re.sub(r'<[^>]+>', '', html)
-    return unescape(texte).strip()
-
-def fusionner_entity(obj):
-    if isinstance(obj, dict):
-        if "entity" in obj and isinstance(obj["entity"], dict):
-            for sub_k, sub_v in obj["entity"].items():
-                #if sub_k not in obj:
-                obj[sub_k] = sub_v
-            del obj["entity"]
-        for k, v in obj.items():
-            fusionner_entity(v)
-    elif isinstance(obj, list):
-        for item in obj:
-            fusionner_entity(item)
-
-def filtrer_champs_utiles_recursive(obj):
-    if isinstance(obj, dict):
-        result = {}
-        for k, v in obj.items():
-            # Ignore les champs non pertinents car dupliqué
-            if k in {"character_races", "organisation_memberships"}:
-                continue
-            if v is None or v == "":
-                continue
-            if isinstance(v, (dict, list)):
-                v_filtré = filtrer_champs_utiles_recursive(v)
-                if v_filtré is not None:
-                    result[k] = v_filtré
-            elif k in CHAMPS_UTILES:
-                if k == "entry":
-                    v = nettoyer_html(v)
-                result[k] = v
-        return result if result else None
-    elif isinstance(obj, list):
-        liste_filtrée = [filtrer_champs_utiles_recursive(e) for e in obj if e is not None]
-        liste_filtrée = [e for e in liste_filtrée if e is not None]
-        return liste_filtrée if liste_filtrée else None
-        return obj if obj else None
 
 def charger_json_depuis_fichier(chemin_fichier):
     try:
