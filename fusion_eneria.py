@@ -31,7 +31,8 @@ IGNORER_CATEGORIES_ORIGINE = {"settings", "gallery", "maps"}
 IGNORER_CATEGORIES = {CATEGORIE_MAP.get(c, c) for c in IGNORER_CATEGORIES_ORIGINE}
 
 # === CHAMPS AUTORISÉS POUR GPT ===
-CHAMPS_UTILES = {"type", "name", "nom", "description", "entry", "contenu", "tags", "résumé", "relation", "catégorie", "titre", "illustration", "prive"}
+CHAMPS_UTILES = {"type", "name", "nom", "description", "entry", "contenu", "tags", "relation",
+                "catégorie", "titre", "illustration", "prive","members", "entity_id","id"}
 
 def extraire_zip(chemin_zip, dossier_temporaire):
     with zipfile.ZipFile(chemin_zip, 'r') as zip_ref:
@@ -52,10 +53,26 @@ def nettoyer_html(html):
     texte = re.sub(r'<[^>]+>', '', html)
     return unescape(texte).strip()
 
+def fusionner_entity(obj):
+    if isinstance(obj, dict):
+        if "entity" in obj and isinstance(obj["entity"], dict):
+            for sub_k, sub_v in obj["entity"].items():
+                #if sub_k not in obj:
+                obj[sub_k] = sub_v
+            del obj["entity"]
+        for k, v in obj.items():
+            fusionner_entity(v)
+    elif isinstance(obj, list):
+        for item in obj:
+            fusionner_entity(item)
+
 def filtrer_champs_utiles_recursive(obj):
     if isinstance(obj, dict):
         result = {}
         for k, v in obj.items():
+            # Ignore les champs non pertinents car dupliqué
+            if k in {"character_races", "organisation_memberships"}:
+                continue
             if v is None or v == "":
                 continue
             if isinstance(v, (dict, list)):
@@ -150,9 +167,14 @@ def charger_et_structurer_json(dossier):
                 if categorie in IGNORER_CATEGORIES:
                     continue
 
-                prive = marquer_et_tester_prive(contenu)
-                
-                contenu_complet = {"type": categorie, **contenu, "prive": prive}
+                marquer_et_tester_prive(contenu)
+
+                fusionner_entity(contenu)
+
+                contenu_complet = {"categorie": categorie, **contenu,}
+
+
+
                 contenu_filtré = filtrer_champs_utiles_recursive(contenu_complet)
 
                 hiérarchie_complete.setdefault(categorie, []).append(contenu_complet)
@@ -166,7 +188,7 @@ def charger_et_structurer_json(dossier):
                 texte_public = contenu.get("description") or contenu.get("contenu") or formater_texte(texte_filtré_public)
 
                 ligne = {
-                    "type": categorie,
+                    "categorie": categorie,
                     "nom": nom,
                     "contenu": texte_prive,
                 }
@@ -174,13 +196,36 @@ def charger_et_structurer_json(dossier):
                 aplat_prive.append(ligne)
 
                 ligne_public = {
-                    "type": categorie,
+                    "categorie": categorie,
                     "nom": nom,
                     "contenu": texte_public
                 }
-                aplat_public.append(ligne_public)
+                if not contenu.get("prive"):
+                    aplat_public.append(ligne_public)
 
     return hiérarchie_complete, hiérarchie_filtrée, aplat_prive, aplat_public
+
+
+def construire_index_noms(data_complet):
+    index = {}
+    for categorie, objets in data_complet.items():
+        for obj in objets:
+            if "id" in obj and ("name" in obj or "nom" in obj):
+                nom = obj.get("name") or obj.get("nom")
+                index[(categorie, str(obj["id"]))] = nom
+    return index
+
+def remplacer_references_kanka(text, index):
+    if not isinstance(text, str):
+        return text
+
+    def replacer(match):
+        type_ref = match.group(1)
+        ident = match.group(2)
+        nom = index.get((type_ref, ident))
+        return f"{nom} ({type_ref})" if nom else match.group(0)
+
+    return re.sub(r"\[([a-z_]+):(\d+)\]", replacer, text)
 
 def sauvegarder_json(data, chemin):
     with open(chemin, "w", encoding="utf-8") as f:
@@ -209,6 +254,7 @@ def main():
     finally:
         shutil.rmtree(dossier_temp)
         print("🧹 Nettoyage terminé.")
+
 
 if __name__ == "__main__":
     main()
