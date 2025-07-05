@@ -27,6 +27,6 @@ CATEGORIE_MAP = {
 
 # === CHAMPS AUTORISÉS POUR GPT ===
 CHAMPS_UTILES = {"type", "name", "nom", "description", "entry", "contenu", "tags", "relation",
-                "catégorie", "titre", "illustration", "prive","members", "entity_id","id"}
+                "catégorie", "titre", "illustration", "prive","members", "entity_id","id","is_destroyed"}
 
 CHAMPS_A_SUPPRIMER_DU_JSONL = ["entity_id", "id"]
