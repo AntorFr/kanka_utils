@@ -8,6 +8,7 @@ OUTPUT_JSONL_PUBLIC = "univers_eneria_connaissance_publique.jsonl"
 # === MAPPAGE DES CATÉGORIES LISIBLES ===
 IGNORER_CATEGORIES = {"settings", "gallery", "maps"}
 IGNORER_SECTIONS = {"character_races", "organisation_memberships", "mentions"}
+CATEGORIES_A_NE_PAS_FILTRER = {"Liaison FTL"}
 
 CATEGORIE_MAP = {
     "characters": "personnage",
@@ -27,6 +28,6 @@ CATEGORIE_MAP = {
 
 # === CHAMPS AUTORISÉS POUR GPT ===
 CHAMPS_UTILES = {"type", "name", "nom", "description", "entry", "contenu", "tags", "relation",
-                "catégorie", "titre", "illustration", "prive","members", "entity_id","id","is_destroyed"}
+                "catégorie", "titre", "illustration", "prive","members","is_destroyed","is_dead","entity_id"} #"entity_id","id"
 
-CHAMPS_A_SUPPRIMER_DU_JSONL = ["entity_id", "id"]
+CHAMPS_A_SUPPRIMER_DU_JSONL = ["entity_id", "id","mentions"]

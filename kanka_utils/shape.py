@@ -57,7 +57,6 @@ def supprimer_objets_prives(obj):
         return [e for e in (supprimer_objets_prives(e) for e in obj) if e is not None]
     return obj
 
-
 def remplacer_references_kanka(text, data):
     """
     Remplace les balises [categorie:id] ou [categorie:id|texte] par le nom trouvé dans data.
@@ -131,7 +130,6 @@ def shape(data):
     data = appliquer_remplacement_references(data, data)
     data = supprimer_champs(data)
 
-
     for categorie, objets in data.items():
         for obj in objets:
             nom = obj.get("name") or obj.get("nom") or ""
@@ -141,18 +139,20 @@ def shape(data):
                 texte_public = obj.get("description") or obj.get("contenu") or formater_texte(obj)
 
             ligne = {
-                "categorie": categorie,
-                "nom": nom,
+                "type": categorie,
                 "contenu": texte_prive,
             }
+            if nom:
+                ligne["titre"] = nom
             aplat_prive.append(ligne)
 
             if texte_public:
                 ligne_public = {
-                    "categorie": categorie,
-                    "nom": nom,
+                    "type": categorie,
                     "contenu": texte_public
                 }
+                if nom:
+                    ligne_public["titre"] = nom
                 aplat_public.append(ligne_public)
 
     return aplat_prive, aplat_public

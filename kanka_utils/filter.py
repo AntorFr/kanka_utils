@@ -1,6 +1,6 @@
 import re
 from html import unescape
-from .config import CHAMPS_UTILES, IGNORER_SECTIONS
+from .config import CHAMPS_UTILES, CATEGORIES_A_NE_PAS_FILTRER
 
 def nettoyer_html(html):
     if not isinstance(html, str):
@@ -9,10 +9,13 @@ def nettoyer_html(html):
     return unescape(texte).strip()
 
 def filtrer_champs_utiles_recursive(obj):
+    # Si la catégorie fait partie des catégories à ne pas filtrer, retourne l'objet tel quel
+
     if isinstance(obj, dict):
         result = {}
         for k, v in obj.items():
-            if k in IGNORER_SECTIONS:
+            if k in CATEGORIES_A_NE_PAS_FILTRER:
+                result[k] = v
                 continue
             if v is None or v == "":
                 continue
@@ -31,5 +34,25 @@ def filtrer_champs_utiles_recursive(obj):
         return liste_filtrée if liste_filtrée else None
     return obj if obj else None
 
+def simplifier_objets_name(obj):
+    """
+    Parcourt récursivement obj.
+    Si un objet (dict) ne contient qu'un champ 'name', il est remplacé par la valeur de ce champ.
+    Si une liste ne contient que des objets simplifiables, elle devient une liste de valeurs.
+    """
+    if isinstance(obj, dict):
+        # Si le dict ne contient qu'un champ 'name'
+        if set(obj.keys()) == {"name"}:
+            return obj["name"]
+        # Sinon, on simplifie récursivement ses valeurs
+        return {k: simplifier_objets_name(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [simplifier_objets_name(e) for e in obj]
+    else:
+        return obj
+
+
 def filter(data):
-    return filtrer_champs_utiles_recursive(data)
+    data = filtrer_champs_utiles_recursive(data)
+    data = simplifier_objets_name(data)
+    return data

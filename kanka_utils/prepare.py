@@ -2,6 +2,14 @@ import os
 from .config import CATEGORIE_MAP
 from .extract import charger_json_depuis_fichier
 
+def est_prive(obj):
+    """
+    Retourne True si l'objet est privé selon la règle métier (is_private == 1 ou visibility_id == 2).
+    """
+    return (
+        isinstance(obj, dict)
+        and (obj.get("is_private") == 1 or obj.get("visibility_id") == 2)
+    )
 
 def normaliser_categorie(data):
     """
@@ -14,7 +22,7 @@ def normaliser_categorie(data):
 
 def marquer_et_tester_prive(obj):
     if isinstance(obj, dict):
-        if obj.get("is_private") == 1 or obj.get("visibility_id") == 2:
+        if est_prive(obj):
             obj["prive"] = True
         for v in obj.values():
             marquer_et_tester_prive(v)
@@ -114,26 +122,23 @@ def enrichir_tags(data):
 
 def enrichir_locations_contains(data):
     """
-    Pour chaque location, ajoute un champ 'contains' qui liste tous les objets dont le champ 'location_id'
-    (ou 'location'->'id') correspond à l'id de la location.
+    Pour chaque location, ajoute un champ 'contains' qui liste tous les objets de la catégorie 'locations'
+    dont le champ 'location'->'id' est égal à l'entity_id de la location à enrichir.
+    Le champ 'contains' est une liste de dicts {id, name}.
     """
-    # On récupère la liste des locations
     locations = data.get("locations", [])
-    # On prépare une liste de tous les objets à parcourir (hors locations)
-    objets_a_tester = []
-    for categorie, objets in data.items():
-        if categorie != "locations" and isinstance(objets, list):
-            objets_a_tester.extend(objets)
-
-    # Pour chaque location, on cherche les objets qui la référencent
+    # Pour chaque location à enrichir
     for loc in locations:
-        loc_id = loc.get("id") or loc.get("entity_id")
+        entity_id = loc.get("entity_id")
         contains = []
-        for obj in objets_a_tester:
-            # On teste la présence d'un champ location_id ou d'un champ location avec un id
-            if ("location_id" in obj and obj["location_id"] == loc_id) or \
-               ("location" in obj and isinstance(obj["location"], dict) and obj["location"].get("id") == loc_id):
-                contains.append(obj)
+        # On parcourt tous les objets de la catégorie locations
+        for other in locations:
+            location_field = other.get("location")
+            if isinstance(location_field, dict) and location_field.get("id") == entity_id:
+                contains.append({
+                    "id": other.get("id"),
+                    "name": other.get("name")
+                })
         loc["contains"] = contains
     return data
 
@@ -168,8 +173,46 @@ def enrichir_locations(data):
     """
     Enrichit les locations en ajoutant les objets qu'elles contiennent et en remplaçant location_id par un objet location.
     """
-    data = enrichir_locations_contains(data)
+
     data = enrichir_location_id(data)
+    data = enrichir_locations_contains(data)
+
+    return data
+
+def creer_liaisons_ftl(data):
+    """
+    Crée une nouvelle catégorie 'FTL' à la racine de data.
+    Pour chaque location de type 'System', parcourt ses relationships et ajoute un objet FTL :
+    {
+        "source": nom du système de départ,
+        "target": nom du système d'arrivée (retrouvé via target_id),
+        "status": relation,
+        "distance": attitude,
+        "prive": booléen si présent dans rel, sinon le champ n'est pas ajouté
+    }
+    """
+    locations = data.get("locations", [])
+    # Index pour retrouver le nom d'un système à partir de son id
+    id_to_name = {loc.get("id"): loc.get("name") for loc in locations if loc.get("type") == "System"}
+
+    ftl_links = []
+    for loc in locations:
+        if loc.get("type") == "System":
+            source_name = loc.get("name")
+            for rel in loc.get("relationships", []):
+                target_id = rel.get("target_id")
+                target_name = id_to_name.get(target_id)
+                if source_name and target_name:
+                    lien = {
+                        "source": source_name,
+                        "target": target_name,
+                        "status": rel.get("relation"),
+                        "distance": rel.get("attitude")
+                    }
+                    if "prive" in rel:
+                        lien["prive"] = rel.get("prive")
+                    ftl_links.append(lien)
+    data["Liaison FTL"] = ftl_links
     return data
 
 def prepare(data_raw):
@@ -181,6 +224,7 @@ def prepare(data_raw):
     data = enrichir_organisations(data)
     data = enrichir_tags(data)
     data = enrichir_locations(data)
+    data = creer_liaisons_ftl(data)
 
     return data
 
