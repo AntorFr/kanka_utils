@@ -124,20 +124,25 @@ def enrichir_locations_contains(data):
     """
     Pour chaque location, ajoute un champ 'contains' qui liste tous les objets de la catégorie 'locations'
     dont le champ 'location'->'id' est égal à l'entity_id de la location à enrichir.
-    Le champ 'contains' est une liste de dicts {id, name}.
+    Le champ 'contains' est une liste de dicts {id, name (type)}.
     """
     locations = data.get("locations", [])
-    # Pour chaque location à enrichir
+    # On prépare un index id -> (name, type)
+    id_to_info = {
+        loc.get("id"): (loc.get("name"), loc.get("type"))
+        for loc in locations
+        if "id" in loc and "name" in loc and "type" in loc
+    }
     for loc in locations:
         entity_id = loc.get("entity_id")
         contains = []
-        # On parcourt tous les objets de la catégorie locations
         for other in locations:
             location_field = other.get("location")
             if isinstance(location_field, dict) and location_field.get("id") == entity_id:
+                name, typ = id_to_info.get(other.get("id"), (None, None))
                 contains.append({
                     "id": other.get("id"),
-                    "name": other.get("name")
+                    "name": f"{name} ({typ})" if name and typ else name or str(other.get("id"))
                 })
         loc["contains"] = contains
     return data
@@ -145,18 +150,23 @@ def enrichir_locations_contains(data):
 def enrichir_location_id(data):
     """
     Pour chaque objet contenant 'location_id', remplace ce champ par un objet 'location'
-    contenant l'id d'origine et le nom de la location dont l'entity_id correspond à location_id.
+    contenant l'id d'origine, le nom de la location et le type entre parenthèses.
     """
-    # On construit un index entity_id -> name pour toutes les locations
-    entity_id_to_name = {loc["entity_id"]: loc["name"] for loc in data.get("locations", []) if "entity_id" in loc and "name" in loc}
+    # On construit un index entity_id -> (name, type) pour toutes les locations
+    entity_id_to_info = {
+        loc["entity_id"]: (loc.get("name"), loc.get("type"))
+        for loc in data.get("locations", [])
+        if "entity_id" in loc and "name" in loc and "type" in loc
+    }
 
     def enrichir_obj(obj):
         if isinstance(obj, dict):
             if "location_id" in obj:
                 loc_id = obj["location_id"]
+                name, typ = entity_id_to_info.get(loc_id, (None, None))
                 obj["location"] = {
                     "id": loc_id,
-                    "name": entity_id_to_name.get(loc_id)
+                    "name": f"{name} ({typ})" if name and typ else name or str(loc_id)
                 }
                 del obj["location_id"]
             for v in obj.values():
