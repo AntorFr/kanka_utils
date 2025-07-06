@@ -3,6 +3,7 @@ ZIP_PATH = "lunivers-deneria_20250702_102015.zip"  # <-- À adapter
 OUTPUT_JSON = "univers_eneria_complet.json"
 OUTPUT_JSON_FILTERED = "univers_eneria_filtered.json"
 OUTPUT_JSONL_TOUT = "univers_eneria_connaissance_privee.jsonl"
+OUTPUT_PDF_TOUT = "univers_eneria_connaissance_privee.pdf"
 OUTPUT_JSONL_PUBLIC = "univers_eneria_connaissance_publique.jsonl"
 
 # === MAPPAGE DES CATÉGORIES LISIBLES ===
