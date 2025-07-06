@@ -1,11 +1,11 @@
 import shutil
-from kanka_utils.config import ZIP_PATH,OUTPUT_JSON, OUTPUT_JSON_FILTERED, OUTPUT_JSONL_TOUT, OUTPUT_JSONL_PUBLIC, OUTPUT_PDF_TOUT
-from kanka_utils.extract import extract
-from kanka_utils.prepare import prepare
-from kanka_utils.export import export_json, export_jsonl, export_pdf
-from kanka_utils.filter import filter
-from kanka_utils.shape import shape
-#from kanka_utils.export import sauvegarder_json, sauvegarder_jsonl
+from kanka_knowledge.config import ZIP_PATH,OUTPUT_JSON, OUTPUT_JSON_FILTERED, OUTPUT_JSONL_TOUT, OUTPUT_JSONL_PUBLIC, OUTPUT_PDF_TOUT
+from kanka_knowledge.extract import extract
+from kanka_knowledge.prepare import prepare
+from kanka_knowledge.export import export_json, export_jsonl, export_pdf
+from kanka_knowledge.filter import filter
+from kanka_knowledge.shape import shape
+#from kanka_knowledge.export import sauvegarder_json, sauvegarder_jsonl
 
 def main():
     try:
