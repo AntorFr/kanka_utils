@@ -20,3 +20,4 @@ eneria_*/
 
 # fichiers système Mac
 .DS_Store
+.env
