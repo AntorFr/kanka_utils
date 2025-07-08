@@ -1,0 +1,87 @@
+{
+  "name": "Zantaray",
+  "type": "System",
+  "entry": "Le système Zantaray est centré autour de son étoile naine rouge, Zantaray, d'une brillance modeste et d'une activité solaire faible, offrant une lumière orangée constante. Ce type d'étoile est stable mais relativement frais, ce qui influe sur les conditions climatiques de ses planètes.",
+  "contains": [
+    {
+      "name": "Zantaray I",
+      "type": "Planete",
+      "entry": "Zantaray I est une planète rocheuse extrêmement froide, située proche de son étoile. Sa surface est criblée de métaux lourds glacés et son atmosphère est composée principalement de dioxyde de carbone avec quelques traces de gaz rares.",
+      "location": "Zantaray",
+      "contains": []
+    },
+    {
+      "name": "Zantaray II",
+      "type": "Planete",
+      "entry": "Zantaray II est une planète océanique couverte d'une immense couche d'eau salée. Son atmosphère humide est riche en oxygène et en azote, avec de fréquents orages. Bien qu'il n'y ait pas de grandes formations terrestres, de vastes récifs coralliens abritent une vie marine adaptée à la faible lumière.",
+      "location": "Zantaray",
+      "contains": [
+        {
+          "name": "Coralian",
+          "type": "Lune",
+          "entry": "Coralian est une petite lune glacée en orbite autour de Zantaray II. Sa surface est composée principalement de glace de méthane, mais des geysers chimiques jaillissent régulièrement, créant des panaches illuminés par l'étoile.",
+          "location": "Zantaray II",
+          "contains": []
+        }
+      ]
+    },
+    {
+      "name": "Zantaray III",
+      "type": "Planete",
+      "entry": "Zantaray III est une planète désertique jonchée de ruines anciennes, vestiges d'une civilisation jadis florissante. Son atmosphère est fine, principalement composée d'argon et d'azote, rendant la vie difficile sans protection adaptée.",
+      "location": "Zantaray",
+      "contains": [
+        {
+          "name": "Dunara",
+          "type": "Lune",
+          "entry": "Dunara est une lune poussiéreuse riche en minéraux rares. Ses hautes montagnes abritent des grottes qui renferment des cristaux étranges, très prisés par les explorateurs et les chercheurs.",
+          "location": "Zantaray III",
+          "contains": []
+        }
+      ]
+    },
+    {
+      "name": "Zantaray IV",
+      "type": "Planete",
+      "entry": "Zantaray IV est une géante gazeuse de couleur pourpre, composée principalement d'hydrogène et d'hélium, avec des traces d'ammoniac conférant à ses nuages des nuances violettes.",
+      "location": "Zantaray",
+      "contains": [
+        {
+          "name": "Pholara",
+          "type": "Lune",
+          "entry": "Pholara est la plus grande des lunes de Zantaray IV, avec des paysages de glace carbonique et des volcans cryogéniques émettant des panaches de gaz.",
+          "location": "Zantaray IV",
+          "contains": []
+        },
+        {
+          "name": "Zentar",
+          "type": "Lune",
+          "entry": "Zentar est une lune couverte de vastes lacs de méthane, avec une atmosphère très dense composée de composés organiques.",
+          "location": "Zantaray IV",
+          "contains": []
+        },
+        {
+          "name": "Astéroïdes de Gorgal",
+          "type": "Asteroides",
+          "entry": "Ceinture d'astéroïdes riche en nickel et fer, l'orbite de Gorgal est peuplée de débris métalliques résultant probablement de la désintégration d'une ancienne lune.",
+          "location": "Zantaray IV",
+          "contains": []
+        }
+      ]
+    },
+    {
+      "name": "Queue de Yarmi",
+      "type": "Comete",
+      "entry": "La comète Yarmi suit une orbite élliptique allongée, s'approchant périodiquement de Zantaray IV. Son noyau est riche en glaces d'eau et de cyanure, créant une longue queue bleutée visible à travers le système.",
+      "location": "Zantaray",
+      "contains": []
+    },
+    {
+      "name": "Anomalie de Vortex Lumiere",
+      "type": "Anomalie spatiale",
+      "entry": "Près du bord du système, l'anomalie Vortex Lumière est une perturbation spatio-temporelle qui déforme la lumière autour d'elle. Son origine est inconnue mais pourrait être liée aux ruines de Zantaray III.",
+      "location": "Zantaray",
+      "contains": []
+    }
+  ]
+}
