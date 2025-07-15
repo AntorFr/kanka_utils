@@ -38,7 +38,7 @@ def embed_texts(texts):
         batch = texts[i:i+100]
         batch = [t[:MAX_CHARS] for t in batch]  # Troncature de sécurité
         resp = openai.embeddings.create(
-            model="text-embedding-3-small",
+            model=EMBEDDING_MODEL,
             input=batch
         )
         vectors.extend([v.embedding for v in resp.data])
@@ -76,3 +76,21 @@ def create_rag_index(jsonl_path, output="rag_index"):
     index = build_faiss_index(passages, vectors)
     save_index(index, passages, path=output)
 
+def format_rag_context(passages: list) -> str:
+    """
+    Formate les passages RAG enrichis pour affichage dans le prompt.
+    """
+    context_lines = []
+    for p in passages:
+        if isinstance(p, dict):
+            line = p.get("text", str(p))
+            if "type" in p:
+                line += f" [type: {p['type']}]"
+            if "tags" in p and p["tags"]:
+                line += f" [tags: {', '.join(p['tags'])}]"
+            if "links" in p and p["links"]:
+                line += f" [liens: {', '.join(p['links'])}]"
+            context_lines.append(line)
+        else:
+            context_lines.append(str(p))
+    return "\n".join(context_lines)
