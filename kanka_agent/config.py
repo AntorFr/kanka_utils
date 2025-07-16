@@ -1,1 +1,2 @@
-GENERATED_SYSTEM_DIR = "generated_systems"
+GENERATED_SYSTEM_DIR = "generated/systems"
+GENERATED_CHARACTERS_DIR = "generated/characters"

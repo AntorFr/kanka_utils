@@ -7,7 +7,7 @@ univers_eneria_complet.json
 univers_eneria_filtered.json
 univers_eneria_connaissance_privee.jsonl
 univers_eneria_connaissance_publique.jsonl
-generated_systems/*.json
+generated/**/*.json
 
 # fichiers temporaires
 *.tmp

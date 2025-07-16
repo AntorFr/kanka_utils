@@ -33,30 +33,52 @@ la generation doit se limiter aux structures artificielles du systeme, les types
 FUNCTIONS = [
     {
         "name": "generate_astral_system",
-        "description": "Génère un système stellaire SWN basé sur la base de connaissance actuelle.",
+        "description": (
+            "Génère un système stellaire SWN basé sur la base de connaissance actuelle."
+        ),
         "parameters": {
             "type": "object",
             "properties": {
                 "name": {
                     "type": "string",
-                    "description": "Nom de l'élément astral. Pour un système : nom du système. Pour une planète, lune, etc., nom unique dans le système."
+                    "description": (
+                        "Nom de l'élément astral. Pour un système : nom du système. "
+                        "Pour une planète, lune, etc., nom unique dans le système."
+                    ),
                 },
                 "type": {
                     "type": "string",
-                    "enum": ["System", "Planete", "Lune", "Asteroides", "Comete", "Anomalie spatiale","Nebuleuse"],
-                    "description": "Type d'élément astral à générer. Exemples : System, Planete, Lune, Asteroides, Comete, Anomalie spatiale, Nebuleuse. Genre cette elements de maniere structurée pour le rendre facile a lire, il sera importé dans kanka, le texte doit donc contenir une mise en forme html.",
+                    "enum": [
+                        "System", "Planete", "Lune", "Asteroides", "Comete",
+                        "Anomalie spatiale", "Nebuleuse"
+                    ],
+                    "description": (
+                        "Type d'élément astral à générer. Exemples : System, Planete, Lune, "
+                        "Asteroides, Comete, Anomalie spatiale, Nebuleuse. "
+                        "Genre cette elements de maniere structurée pour le rendre facile a lire, "
+                        "il sera importé dans kanka, le texte doit donc contenir une mise en forme html."
+                    ),
                 },
                 "entry": {
                     "type": "string",
-                    "description": "Description de l'élément astral. Pour un système, décrire le soleil, sa puissance, sa couleur, etc. Pour une planète ou une lune : composition, géologie, atmosphère, climat, biosphère, etc. Pour les astéroïdes, nebuleuses et comètes : composition, taille, trajectoire. Pour les anomalies : nature, effet, origine."
+                    "description": (
+                        "Description de l'élément astral. Pour un système, décrire le soleil, sa puissance, sa couleur, etc. "
+                        "Pour une planète ou une lune : composition, géologie, atmosphère, climat, biosphère, etc. "
+                        "Pour les astéroïdes, nebuleuses et comètes : composition, taille, trajectoire."
+                    ),
                 },
                 "location": {
                     "type": "string",
-                    "description": "Nom de l'emplacement parent. Vide pour les systèmes. Pour les autres : nom du système ou de la planète parente (ex. Sorinth, Sorinth III, etc.)."
+                    "description": (
+                        "Nom de l'emplacement parent. Vide pour les systèmes. "
+                        "Pour les autres : nom du système ou de la planète parente (ex. Sorinth, Sorinth III, etc.)."
+                    ),
                 },
                 "contains": {
                     "type": "array",
-                    "description": "Liste des corps astraux contenus dans cet élément (planètes d’un système, lunes d’une planète, etc.).",
+                    "description": (
+                        "Liste des corps astraux contenus dans cet élément (planètes d’un système, lunes d’une planète, etc.)."
+                    ),
                     "items": {
                         "$ref": "#"
                     }
@@ -67,26 +89,49 @@ FUNCTIONS = [
     },
     {
         "name": "generate_artifical_location",
-        "description": "Génère une location artificielle SWN basée sur la base de connaissance actuelle.",
+        "description": (
+            "Génère une location artificielle SWN basée sur la base de connaissance actuelle."
+        ),
         "parameters": {
             "type": "object",
             "properties": {
                 "name": {
                     "type": "string",
-                    "description": "Nom de l'élément, choisie des nom cohérent avec le type d'élément. Par exemple, pour une station spatiale : 'Station Alpha', pour une colonie : 'Colonie de Nova Prime' si elle est sur Nova Prime, etc."
+                    "description": (
+                        "Nom de l'élément, choisie des nom cohérent avec le type d'élément. "
+                        "Par exemple, pour une station spatiale : 'Station Alpha', pour une colonie : "
+                        "'Colonie de Nova Prime' si elle est sur Nova Prime, etc."
+                    ),
                 },
                 "type": {
                     "type": "string",
-                    "enum": ["Station", "Colonie", "Ruines", "Ville", "Debrits spaciaux"],
-                    "description": "Type d'élément artificiel à générer. Exemples : Station, Colonie, Ruines, Ville, Debrits spaciaux."
+                    "enum": [
+                        "Station", "Colonie", "Ruines", "Ville",
+                        "Debrits spaciaux", "anomalies spatiales"
+                    ],
+                    "description": (
+                        "Type d'élément artificiel à générer. Exemples : Station, Colonie, Ruines, Ville, "
+                        "Debrits spaciaux, Anomalies spatiales."
+                    ),
                 },
                 "entry": {
                     "type": "string",
-                    "description": "description de l'élément. Pour une station ou une colonie : sa fonction, son architecture, son histoire, le nombre de personnes qui y vivent, les services disponibles, les factions qui la controle. Pour des ruines : leur origine, leur état actuel, les dangers potentiels. Pour une ville : sa taille, son organisation sociale, ses points d'intérêt, les services disponible (marchands, soins, reparation). Pour des débris spatiaux : leur origine, leur composition, les dangers associés. Genre cette elements de maniere structurée pour le rendre facile a lire, il sera importé dans kanka, le texte doit donc contenir une mise en forme html"
+                    "description": (
+                        "description de l'élément. Pour une station ou une colonie : sa fonction, son architecture, "
+                        "son histoire, le nombre de personnes qui y vivent, les services disponibles, les factions qui la controle. "
+                        "Pour des ruines : leur origine, leur état actuel, les dangers potentiels. Pour une ville : sa taille, "
+                        "son organisation sociale, ses points d'intérêt, les services disponible (marchands, soins, reparation). "
+                        "Pour des débris spatiaux : leur origine, leur composition, les dangers associés. "
+                        "Genre cette elements de maniere structurée pour le rendre facile a lire, il sera importé dans kanka, "
+                        "le texte doit donc contenir une mise en forme html"
+                    ),
                 },
                 "location": {
                     "type": "string",
-                    "description": "le nom de l'emplacement parent. lune, planete, systeme pour les stations ou debrits spaciaux. Planete ou lune pour les colonies, villes. n'importe le quel pour les ruines."
+                    "description": (
+                        "le nom de l'emplacement parent. lune, planete, systeme pour les stations ou debrits spaciaux. "
+                        "Planete ou lune pour les colonies, villes. n'importe le quel pour les ruines."
+                    ),
                 }
             },
             "required": ["name", "type", "entry"]
@@ -122,7 +167,7 @@ class SWNAgent:
                 "role": "user",
                 "content": (
                     f"Crée un système stellaire nommé '{nom_systeme}' avec tous ses corps astraux naturels "
-                    "(étoile, planètes, lunes, astéroïdes, comètes, anomalies spatiales). "
+                    "(étoile, planètes, lunes, astéroïdes, comètes). "
                     "Pour chaque corps, donne un nom, un type, une description et des caractéristiques."
                 )
             }
@@ -131,7 +176,7 @@ class SWNAgent:
                 "role": "user",
                 "content": (
                     "Crée un système stellaire original (nomme-le toi-même) avec tous ses corps astraux naturels "
-                    "(étoile, planètes, lunes, astéroïdes, comètes, anomalies spatiales). "
+                    "(étoile, planètes, lunes, astéroïdes, comètes). "
                     "Pour chaque corps, donne un nom, un type, une description et des caractéristiques."
                 )
             }
