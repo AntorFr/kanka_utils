@@ -2,6 +2,7 @@ import requests
 import json
 from typing import Dict, Any, Optional, List
 from kanka_api.config import KANKA_API_URL, CAMPAIGN_ID, HEADERS
+from kanka_api.utils import kanka_api_request
 
 def create_or_update_character(character_data: Dict[str, Any]) -> Optional[int]:
     """
@@ -14,12 +15,12 @@ def create_or_update_character(character_data: Dict[str, Any]) -> Optional[int]:
     if is_update:
         kanka_id = character_data["id"]
         url = f"{KANKA_API_URL}/campaigns/{CAMPAIGN_ID}/characters/{kanka_id}"
-        method = requests.patch
+        method = "patch"
     else:
         url = f"{KANKA_API_URL}/campaigns/{CAMPAIGN_ID}/characters"
-        method = requests.post
+        method = "post"
 
-    response = method(url, headers=HEADERS, json=character_data)
+    response = kanka_api_request(method, url, headers=HEADERS, json=character_data)
     if response.status_code in (200, 201):
         kanka_id = response.json()["data"]["id"]
         character_data["id"] = kanka_id
@@ -52,7 +53,7 @@ def fetch_character_from_kanka(character_id: int) -> (Dict[str, Any], str):
     :return: Tuple (dictionnaire représentant le personnage, nom du personnage).
     """
     url = f"{KANKA_API_URL}/campaigns/{CAMPAIGN_ID}/characters/{character_id}"
-    response = requests.get(url, headers=HEADERS)
+    response = kanka_api_request('get',url, headers=HEADERS)
     if response.status_code != 200:
         raise Exception(f"Erreur récupération character {character_id}: {response.status_code} {response.text}")
     data = response.json()["data"]

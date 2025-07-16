@@ -9,11 +9,11 @@ from kanka_knowledge.shape import shape
 from kanka_agent.rag_utils import create_rag_index
 from kanka_agent.system_agent import SWNAgent
 
-from kanka_api.location import import_system_from_file, import_location_tree, fetch_location_from_kanka
+from kanka_api.location import import_system_from_file, import_location_tree, fetch_location_from_kanka, export_all_systems_from_kanka
 from kanka_api.utils import main as kanka_api_main
+from kanka_api.character import import_characters_from_file, create_or_update_character, fetch_character_from_kanka
 
-from kanka_agent.export import save_system_json
-
+from kanka_agent.export import save_system_json, save_character_json
 
 
 #from kanka_knowledge.export import sauvegarder_json, sauvegarder_jsonl
@@ -61,7 +61,11 @@ def main():
         #save_system_json(systeme, nom)
 
 if __name__ == "__main__":
-    main()
+    #main()
+    export_all_systems_from_kanka()
+    #character, name = fetch_character_from_kanka(2036576)
+    #save_character_json(character, name)
+
     #import_system_from_file("generated_systems/Sol.json")
 
 

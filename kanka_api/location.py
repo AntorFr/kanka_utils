@@ -2,7 +2,39 @@ import requests
 import json
 from typing import Dict, Any, Optional, List
 from kanka_api.config import KANKA_API_URL, CAMPAIGN_ID, HEADERS, ICONS_LOCATIONS
+from kanka_agent.export import save_system_json
+from kanka_api.utils import kanka_api_request
 
+def export_all_systems_from_kanka() -> None:
+    """
+    Exporte tous les systèmes (locations de type 'System') de la campagne Kanka.
+    Pour chaque système, récupère l'arbre complet et l'enregistre en JSON via save_system_json.
+    :param save_dir: Dossier où sauvegarder les fichiers JSON.
+    """
+    
+    # Récupérer toutes les locations de la campagne (pagination)
+    all_locations = []
+    page = 1
+    while True:
+        url = f"{KANKA_API_URL}/campaigns/{CAMPAIGN_ID}/locations"
+        resp = kanka_api_request('get',url, headers=HEADERS, params={"page": page})
+        if resp.status_code != 200:
+            raise Exception(f"Erreur récupération des locations (page {page}): {resp.status_code} {resp.text}")
+        data = resp.json()
+        all_locations.extend(data["data"])
+        if not data.get("links", {}).get("next"):
+            break
+        page += 1
+
+    # Filtrer les systèmes
+    systems = [loc for loc in all_locations if loc.get("type") == "System"]
+
+    print(f"🔎 {len(systems)} systèmes trouvés.")
+
+    for system in systems:
+        system_json, system_name = fetch_location_from_kanka(system["id"])
+        save_system_json(system_json, system_name)
+        print(f"✅ Système '{system_name}' exporté.")
 
 def fetch_location_from_kanka(location_id: int) -> (Dict[str, Any], str):
     """
@@ -12,7 +44,7 @@ def fetch_location_from_kanka(location_id: int) -> (Dict[str, Any], str):
     """
     # Récupérer la location principale
     url = f"{KANKA_API_URL}/campaigns/{CAMPAIGN_ID}/locations/{location_id}?related=locations"
-    response = requests.get(url, headers=HEADERS)
+    response = kanka_api_request('get',url, headers=HEADERS)
     if response.status_code != 200:
         raise Exception(f"Erreur récupération location {location_id}: {response.status_code} {response.text}")
     data = response.json()["data"]
@@ -49,11 +81,11 @@ def create_location(location_data: Dict[str, Any], parent_id: Optional[int] = No
         # Mise à jour (PATCH)
         kanka_id = location_data["id"]
         url = f"{KANKA_API_URL}/campaigns/{CAMPAIGN_ID}/locations/{kanka_id}"
-        method = requests.patch
+        method = "patch"
     else:
         # Création (POST)
         url = f"{KANKA_API_URL}/campaigns/{CAMPAIGN_ID}/locations"
-        method = requests.post
+        method = "post"
 
     payload = {
         "name": location_data["name"],
@@ -68,7 +100,7 @@ def create_location(location_data: Dict[str, Any], parent_id: Optional[int] = No
     if icon_uuid:
         payload["entity_image_uuid"] = icon_uuid
 
-    response = method(url, headers=HEADERS, json=payload)
+    response = kanka_api_request(method,url, headers=HEADERS, json=payload)
     if response.status_code in (200, 201):
         kanka_id = response.json()["data"]["id"]
         location_data["id"] = kanka_id

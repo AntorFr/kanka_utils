@@ -2,8 +2,25 @@ import requests
 from typing import List, Dict, Any
 from dotenv import load_dotenv
 from kanka_api.config import KANKA_API_URL,CAMPAIGN_ID, HEADERS
+import time
+import requests
+from typing import Any
 
-
+def kanka_api_request(method: str, url: str, **kwargs) -> Any:
+    """
+    Effectue une requête à l'API Kanka, gère le rate limit (429) en attendant et réessayant.
+    :param method: 'get', 'post', 'patch', etc.
+    :param url: URL complète de l'API.
+    :param kwargs: Arguments passés à requests (headers, params, json, etc.)
+    :return: L'objet Response de requests.
+    """
+    while True:
+        response = requests.request(method, url, **kwargs)
+        if response.status_code != 429:
+            return response
+        print("⏳ Limite d'appels atteinte (429), attente 30 secondes avant retry...")
+        time.sleep(30)
+        
 def list_campaigns() -> List[Dict[str, Any]]:
     """
     Récupère la liste des campagnes Kanka accessibles avec le token fourni.
