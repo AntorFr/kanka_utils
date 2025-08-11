@@ -103,11 +103,39 @@ def enrich_system(nom_systeme: str, prompt: str, contexte=None):
     """
     json_path = os.path.join(GENERATED_SYSTEM_DIR, f"{nom_systeme}.json")
     agent = SWNAgent()
+    
+    # Charger le système existant
     with open(json_path, "r", encoding="utf-8") as f:
-        system_json = json.load(f)
-    enriched_system, nom = agent.enrich_system(system_json, prompt, contexte)
-    save_system_json(enriched_system, nom)
-    print(f"✅ Système '{nom}' enrichi et sauvegardé dans {json_path}.")
+        original_system = json.load(f)
+    
+    # Faire l'enrichissement
+    enriched_system, nom = agent.enrich_system(original_system, prompt, contexte)
+    
+    # Préserver les IDs existants
+    def preserve_existing_ids(original, enriched):
+        if isinstance(original, dict) and isinstance(enriched, dict):
+            if "id" in original:
+                enriched["id"] = original["id"]
+            if "contains" in original and "contains" in enriched:
+                original_by_name = {item.get("name"): item for item in original.get("contains", []) if isinstance(item, dict)}
+                for enriched_item in enriched.get("contains", []):
+                    if isinstance(enriched_item, dict):
+                        name = enriched_item.get("name")
+                        if name in original_by_name:
+                            preserve_existing_ids(original_by_name[name], enriched_item)
+        return enriched
+    
+    # Préserver les IDs existants
+    enriched_system = preserve_existing_ids(original_system, enriched_system)
+    
+    # Forcer les propriétés originales critiques pour éviter les changements non désirés
+    enriched_system["name"] = original_system["name"]  # Nom original
+    enriched_system["type"] = original_system["type"]  # Type original
+    if "id" in original_system:
+        enriched_system["id"] = original_system["id"]  # ID original
+    
+    save_system_json(enriched_system, nom_systeme)
+    print(f"✅ Système '{nom_systeme}' enrichi et sauvegardé dans {json_path}.")
 
 def enrich_structure(nom_structure: str, prompt: str, contexte=None, location: str = ""):
     """
@@ -120,6 +148,42 @@ def enrich_structure(nom_structure: str, prompt: str, contexte=None, location: s
     enriched_structure, nom = agent.enrich_structure(structure_json, prompt, contexte, location)
     save_system_json(enriched_structure, nom)
     print(f"✅ Structure '{nom}' enrichie et sauvegardée dans {json_path}.")
+
+def generate_system_synthesis(nom_systeme: str):
+    """
+    Génère une synthèse automatique du système en analysant son contenu et en créant des liens Kanka.
+    """
+    json_path = os.path.join(GENERATED_SYSTEM_DIR, f"{nom_systeme}.json")
+    
+    with open(json_path, "r", encoding="utf-8") as f:
+        system_data = json.load(f)
+    
+    if "id" not in system_data:
+        print(f"❌ Le système '{nom_systeme}' n'a pas d'ID Kanka. Importez-le d'abord.")
+        return
+    
+    # Utiliser l'agent pour générer la synthèse
+    agent = SWNAgent()
+    updated_entry = agent.generate_system_synthesis(system_data)
+    
+    # Mettre à jour le système
+    system_data["entry"] = updated_entry
+    
+    # Sauvegarder
+    save_system_json(system_data, nom_systeme)
+    
+    # Compter les éléments pour l'affichage
+    total_elements = 0
+    if "contains" in system_data:
+        def count_elements(container):
+            count = len(container.get("contains", []))
+            for item in container.get("contains", []):
+                count += count_elements(item)
+            return count
+        total_elements = count_elements(system_data)
+    
+    print(f"✅ Synthèse générée pour le système '{nom_systeme}' avec {total_elements} éléments liés.")
+    return updated_entry
 
 def main():
     # Choisis ici l'action à effectuer
@@ -135,12 +199,14 @@ def main():
     #enrich_structure("Chantiers Orbitaux de Clyra", "Ajoute la description des chantiers", contexte=["Stellarion Dynamics"])
     #import_location("Chantiers Orbitaux de Clyra")
     
-    # Enrichissement du système Nolvar
-    enrich_system(
-        "Nolvar", 
-        "Enrichis ce système avec tous ses corps astraux naturels : étoile centrale, planètes, lunes, astéroïdes, comètes. Ajoute des détails sur les tempêtes énergétiques mentionnées et leur impact sur les corps célestes. Crée des planètes avec des caractéristiques uniques liées aux phénomènes gravitationnels extrêmes.",
-        contexte=["AST", "tempêtes énergétiques", "phénomènes gravitationnels", "recherche scientifique", "système inhabité"]
-    )
+    # Export du système Aureon depuis Kanka pour récupérer les entity_id
+    export_system_from_kanka(1757369)  # ID Kanka d'Aureon
+    
+    # Génération de synthèse pour le système Aureon (maintenant avec entity_id)
+    generate_system_synthesis("Aureon")
+    
+    # Mise à jour du système dans Kanka avec la synthèse générée
+    import_system("Aureon")
     
     # Pour l'exemple, on lance la mise à jour de la base de connaissance :
     #update_knowledge_base()

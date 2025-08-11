@@ -56,6 +56,10 @@ def fetch_location_from_kanka(location_id: int) -> (Dict[str, Any], str):
         "entry": data.get("entry"),
         "id": data["id"]
     }
+    
+    # Ajouter l'entity_id s'il existe
+    if "entity_id" in data:
+        location_json["entity_id"] = data["entity_id"]
 
     # Récupérer les enfants (locations dont le parent est cette location)
     children = []
@@ -102,8 +106,14 @@ def create_location(location_data: Dict[str, Any], parent_id: Optional[int] = No
 
     response = kanka_api_request(method,url, headers=HEADERS, json=payload)
     if response.status_code in (200, 201):
-        kanka_id = response.json()["data"]["id"]
+        response_data = response.json()["data"]
+        kanka_id = response_data["id"]
+        entity_id = response_data.get("entity_id")  # Récupérer l'entity_id
+        
         location_data["id"] = kanka_id
+        if entity_id:
+            location_data["entity_id"] = entity_id  # Stocker l'entity_id aussi
+        
         return kanka_id
     else:
         print(f"Erreur {'mise à jour' if is_update else 'création'} location '{location_data['name']}': {response.status_code} {response.text}")

@@ -28,6 +28,36 @@ la generation doit se limiter aux structures artificielles du systeme, les types
 
 # Charger les variables d'environnement depuis un fichier .env
 
+SYNTHESIS_PROMPT = """\
+Tu es un expert en rédaction de synthèses pour des systèmes stellaires dans un univers de science-fiction.
+
+Voici les données complètes d'un système stellaire :
+{system_json}
+
+Ta mission :
+1. Analyser le contenu du système et ses composants
+2. Rédiger une synthèse HTML concise et attrayante qui donne un aperçu général du système
+3. Inclure des liens Kanka vers les éléments importants du système
+
+IMPORTANT - Format des liens Kanka :
+Pour chaque élément qui a un entity_id, utilise ce format exact :
+<a href="#" class="mention" data-name="{{NOM_ELEMENT}}" data-mention="[location:{{ENTITY_ID}}]">{{NOM_ELEMENT}}</a>
+
+Voici les éléments avec leurs entity_ids Kanka :
+{elements_list}
+
+Instructions de rédaction :
+- Commence par une phrase d'introduction sur le système
+- Mentionne les caractéristiques principales (étoile, planètes, stations, etc.)
+- Utilise les liens Kanka pour les éléments importants
+- Garde un ton immersif et professionnel
+- Limite à 2-3 paragraphes maximum
+- N'inclus PAS de titre <h3>, juste le contenu de la synthèse
+- Évite de répéter textuellement les descriptions existantes, fais une vraie synthèse
+
+Génère uniquement le contenu HTML de la synthèse, sans titre ni balises structurantes.
+"""
+
 
 # Fonction virtuelle déclarée à l'API GPT
 FUNCTIONS = [
@@ -354,3 +384,72 @@ class SWNAgent:
             prompt=prompt,
             system_mode=False
         )
+    
+    def generate_system_synthesis(self, system_data: dict) -> str:
+        """
+        Génère une synthèse automatique du système en utilisant ChatGPT pour analyser le contenu et créer des liens Kanka.
+        """
+        if "id" not in system_data:
+            raise ValueError(f"Le système '{system_data.get('name', 'inconnu')}' n'a pas d'ID Kanka.")
+        
+        # Extraire tous les éléments avec leurs entity_ids pour créer les liens
+        def extract_elements_with_entity_ids(container, elements_list=None):
+            if elements_list is None:
+                elements_list = []
+            
+            if "contains" in container:
+                for element in container["contains"]:
+                    if "entity_id" in element:
+                        elements_list.append({
+                            "name": element["name"],
+                            "type": element["type"],
+                            "entity_id": element["entity_id"],
+                            "entry": element.get("entry", "")
+                        })
+                    # Récursion pour les sous-éléments
+                    extract_elements_with_entity_ids(element, elements_list)
+            
+            return elements_list
+        
+        elements = extract_elements_with_entity_ids(system_data)
+        
+        # Préparer les données pour le prompt
+        system_json_str = json.dumps(system_data, ensure_ascii=False, indent=2)
+        elements_list = "\n".join([f"- {elem['name']} (entity_id: {elem['entity_id']}) - Type: {elem['type']}" for elem in elements])
+        
+        # Formater le prompt avec les données
+        formatted_prompt = SYNTHESIS_PROMPT.format(
+            system_json=system_json_str,
+            elements_list=elements_list
+        )
+
+        try:
+            # Appeler l'API OpenAI
+            response = self.client.chat.completions.create(
+                model="gpt-4o",
+                messages=[
+                    {"role": "system", "content": "Tu es un expert en rédaction de synthèses pour des univers de science-fiction. Tu produis du contenu HTML propre et professionnel."},
+                    {"role": "user", "content": formatted_prompt}
+                ],
+                temperature=0.7,
+                max_tokens=1000
+            )
+            
+            synthesis_content = response.choices[0].message.content.strip()
+            
+            # Combiner l'ancienne description avec la nouvelle synthèse
+            original_entry = system_data.get("entry", "")
+            
+            # Séparer l'ancienne description de la synthèse existante
+            if "<h3>Synthèse du système" in original_entry:
+                original_entry = original_entry.split("<h3>Synthèse du système")[0].strip()
+            
+            # Ajouter un titre et combiner
+            synthesis_with_title = f"<h3>Synthèse du système {system_data['name']}</h3>\n{synthesis_content}"
+            updated_entry = f"{original_entry}\n\n{synthesis_with_title}"
+            
+            return updated_entry
+            
+        except Exception as e:
+            print(f"❌ Erreur lors de la génération de la synthèse : {e}")
+            return system_data.get("entry", "")
