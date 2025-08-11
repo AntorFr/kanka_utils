@@ -172,6 +172,31 @@ FUNCTIONS = [
             },
             "required": ["name", "type", "entry"]
         }
+    },
+    {
+        "name": "generate_system_synthesis",
+        "description": (
+            "Génère une synthèse HTML concise et attrayante pour un système stellaire complet."
+        ),
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "synthesis": {
+                    "type": "string",
+                    "description": (
+                        "Synthèse HTML du système stellaire. Doit inclure :\n"
+                        "- Une introduction générale sur le système\n"
+                        "- Les caractéristiques principales (étoile, planètes, stations, etc.)\n"
+                        "- Des liens Kanka au format : <a href=\"#\" class=\"mention\" data-name=\"NOM\" data-mention=\"[location:ENTITY_ID]\">NOM</a>\n"
+                        "- Un ton immersif et professionnel\n"
+                        "- 2-3 paragraphes maximum\n"
+                        "- PAS de titre <h3>, juste le contenu de la synthèse\n"
+                        "- Éviter de répéter textuellement les descriptions existantes"
+                    ),
+                }
+            },
+            "required": ["synthesis"]
+        }
     }
 ]
 
@@ -387,7 +412,7 @@ class SWNAgent:
     
     def generate_system_synthesis(self, system_data: dict) -> str:
         """
-        Génère une synthèse automatique du système en utilisant ChatGPT pour analyser le contenu et créer des liens Kanka.
+        Génère une synthèse automatique du système en utilisant ChatGPT avec le système de FUNCTIONS.
         """
         if "id" not in system_data:
             raise ValueError(f"Le système '{system_data.get('name', 'inconnu')}' n'a pas d'ID Kanka.")
@@ -424,18 +449,25 @@ class SWNAgent:
         )
 
         try:
-            # Appeler l'API OpenAI
+            # Appeler l'API OpenAI avec le système de FUNCTIONS
             response = self.client.chat.completions.create(
                 model="gpt-4o",
                 messages=[
                     {"role": "system", "content": "Tu es un expert en rédaction de synthèses pour des univers de science-fiction. Tu produis du contenu HTML propre et professionnel."},
                     {"role": "user", "content": formatted_prompt}
                 ],
-                temperature=0.7,
-                max_tokens=1000
+                functions=FUNCTIONS,
+                function_call={"name": "generate_system_synthesis"}
             )
             
-            synthesis_content = response.choices[0].message.content.strip()
+            # Extraire la synthèse depuis la réponse de la fonction
+            arguments = response.choices[0].message.function_call.arguments
+            try:
+                result_json = json.loads(arguments)
+                synthesis_content = result_json.get("synthesis", "").strip()
+            except Exception:
+                print(f"❌ Erreur parsing JSON: {arguments}")
+                return system_data.get("entry", "")
             
             # Combiner l'ancienne description avec la nouvelle synthèse
             original_entry = system_data.get("entry", "")
