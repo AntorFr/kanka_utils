@@ -126,7 +126,7 @@ def main():
     # Exemple d'utilisation :
     # update_knowledge_base()
     # generate_system(nom_systeme="Sol", contexte=["Contexte système Sol"])
-    generate_structure(nom_structure="Dôme de Balor", type_structure="Colonie", contexte=["Vortex Armatum", "Centre de test d'armemement de Vortex Armatum", "200 personnes y travail"], location="Kheron")
+    # generate_structure(nom_structure="Dôme de Balor", type_structure="Colonie", contexte=["Vortex Armatum", "Centre de test d'armemement de Vortex Armatum", "200 personnes y travail"], location="Kheron")
     # export_system_from_kanka(1757370)
     # export_all_systems()
     #import_system("Ephyros")
@@ -134,6 +134,14 @@ def main():
     #enrich_system("Ephyros", "Enrichie le system Ephyros", contexte=[])
     #enrich_structure("Chantiers Orbitaux de Clyra", "Ajoute la description des chantiers", contexte=["Stellarion Dynamics"])
     #import_location("Chantiers Orbitaux de Clyra")
+    
+    # Enrichissement du système Nolvar
+    enrich_system(
+        "Nolvar", 
+        "Enrichis ce système avec tous ses corps astraux naturels : étoile centrale, planètes, lunes, astéroïdes, comètes. Ajoute des détails sur les tempêtes énergétiques mentionnées et leur impact sur les corps célestes. Crée des planètes avec des caractéristiques uniques liées aux phénomènes gravitationnels extrêmes.",
+        contexte=["AST", "tempêtes énergétiques", "phénomènes gravitationnels", "recherche scientifique", "système inhabité"]
+    )
+    
     # Pour l'exemple, on lance la mise à jour de la base de connaissance :
     #update_knowledge_base()
 

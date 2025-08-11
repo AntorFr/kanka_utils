@@ -1,6 +1,13 @@
 # fichiers Python compilés
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+
+# environnement virtuel
+.venv/
+venv/
+env/
 
 # fichiers d'export et outputs
 univers_eneria_complet.json
