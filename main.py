@@ -1,9 +1,9 @@
 import shutil, os , json
 
-from kanka_knowledge.config import ZIP_PATH, OUTPUT_JSON, OUTPUT_JSON_FILTERED, OUTPUT_JSONL_TOUT, OUTPUT_JSONL_PUBLIC, OUTPUT_PDF_TOUT
+from kanka_knowledge.config import ZIP_PATH, OUTPUT_JSON, OUTPUT_JSON_FILTERED, OUTPUT_JSONL_TOUT, OUTPUT_JSONL_PUBLIC, OUTPUT_PDF_TOUT, OUTPUT_MARKDOWN
 from kanka_knowledge.extract import extract
 from kanka_knowledge.prepare import prepare
-from kanka_knowledge.export import export_json, export_jsonl, export_pdf
+from kanka_knowledge.export import export_json, export_jsonl, export_pdf, export_markdown
 from kanka_knowledge.filter import filter
 from kanka_knowledge.shape import shape
 
@@ -29,7 +29,8 @@ def update_knowledge_base():
 
         aplat_prive, aplat_public = shape(filtered_data)
         export_jsonl(aplat_prive, OUTPUT_JSONL_TOUT)
-        #export_pdf(aplat_prive, OUTPUT_PDF_TOUT)
+        export_pdf(aplat_prive, OUTPUT_PDF_TOUT)
+        export_markdown(aplat_prive, OUTPUT_MARKDOWN)
         create_rag_index(OUTPUT_JSONL_TOUT)
 
         export_jsonl(aplat_public, OUTPUT_JSONL_PUBLIC)
