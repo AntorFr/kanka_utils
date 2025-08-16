@@ -266,19 +266,15 @@ class SWNAgent:
                 enrich_text += f"Consigne d'enrichissement :\n{prompt}\n"
             if system_mode:
                 enrich_text += (
-                    f"IMPORTANT : Enrichie le système stellaire '{main_name}' en PRESERVANT ABSOLUMENT tous les corps astraux existants. "
-                    "RESPECTE la structure existante complète et ne modifie PAS les éléments déjà présents. "
-                    "Tu peux enrichir les descriptions existantes et ajouter de nouveaux corps astraux naturels (Planète, Lune, Astéroïdes, Comète). "
-                    "Pour chaque nouveau corps, donne un nom, un type, une description et des caractéristiques. "
-                    "CONSERVE tous les IDs et la hiérarchie existante. Retourne le système COMPLET avec tous les éléments originaux plus les nouveaux."
+                    f"Enrichie le système stellaire '{main_name}' en gardant tous les corps astraux existants. "
+                    "Enrichie les descriptions existantes et ajoute de nouveaux corps astraux naturels (Planete, Lune, Asteroides, Comete). "
+                    "Pour chaque nouveau corps, donne un nom, un type, une description et des caractéristiques."
                 )
             else:
                 enrich_text += (
-                    f"IMPORTANT : Enrichie la structure artificielle '{main_name}' en PRESERVANT ABSOLUMENT tous les éléments existants. "
-                    "RESPECTE la structure existante complète et ne modifie PAS les éléments déjà présents. "
-                    "Tu peux enrichir les descriptions existantes et ajouter de nouveaux éléments artificiels (Station, Colonie, Ruines, Ville, Débris spaciaux). "
-                    "Pour chaque nouvel élément, donne un nom, un type, une description et des caractéristiques. "
-                    "CONSERVE tous les IDs et la hiérarchie existante. Retourne la structure COMPLETE avec tous les éléments originaux plus les nouveaux."
+                    f"Enrichie la structure artificielle '{main_name}' en gardant tous les éléments existants. "
+                    "Enrichie les descriptions existantes et ajoute de nouveaux éléments artificiels (Station, Colonie, Ruines, Ville, Débris spaciaux). "
+                    "Pour chaque nouvel élément, donne un nom, un type, une description et des caractéristiques."
                 )
             user_content = {
                 "role": "user",
@@ -473,169 +469,19 @@ class SWNAgent:
                 print(f"❌ Erreur parsing JSON: {arguments}")
                 return system_data.get("entry", "")
             
-            # Nettoyage robuste des anciennes synthèses
+            # Combiner l'ancienne description avec la nouvelle synthèse
             original_entry = system_data.get("entry", "")
             
-            # Nettoyer toutes les synthèses existantes (multiples variantes possibles)
-            patterns_to_clean = [
-                "<p><span style=\"color:rgb(205,214,244);font-size:1.5rem;background-color:unset;\">Synthèse du système",  # Format Kanka avec style
-                "<p><span style=\"color:rgb(205,214,244);font-size:1.5rem;\">Synthèse du système",  # Variante format Kanka
-                "<h3>Synthèse du système",
-                "<h2>Synthèse du système", 
-                "<h4>Synthèse du système",
-                "Synthèse du système",
-                "<h3>Synthese du systeme",  # sans accents
-                "<h2>Synthese du systeme",
-                "<h4>Synthese du systeme"
-            ]
+            # Séparer l'ancienne description de la synthèse existante
+            if "<h3>Synthèse du système" in original_entry:
+                original_entry = original_entry.split("<h3>Synthèse du système")[0].strip()
             
-            cleaned_entry = original_entry
-            for pattern in patterns_to_clean:
-                if pattern in cleaned_entry:
-                    # Trouver le début de la synthèse et tout supprimer après
-                    cleaned_entry = cleaned_entry.split(pattern)[0].strip()
-                    print(f"🧹 Nettoyage de l'ancienne synthèse détectée avec pattern: {pattern}")
-                    break
-            
-            original_entry = cleaned_entry
-            
-            # Si la nouvelle synthèse est vide, garder seulement la description originale
-            if not synthesis_content:
-                return original_entry
-            
-            # Créer la nouvelle synthèse avec titre
+            # Ajouter un titre et combiner
             synthesis_with_title = f"<h3>Synthèse du système {system_data['name']}</h3>\n{synthesis_content}"
-            
-            # Combiner : description originale + nouvelle synthèse (remplacement complet)
-            if original_entry.strip():
-                updated_entry = f"{original_entry}\n\n{synthesis_with_title}"
-            else:
-                # Si pas de description originale, juste la synthèse
-                updated_entry = synthesis_with_title
+            updated_entry = f"{original_entry}\n\n{synthesis_with_title}"
             
             return updated_entry
             
         except Exception as e:
             print(f"❌ Erreur lors de la génération de la synthèse : {e}")
             return system_data.get("entry", "")
-
-    def smart_merge(self, original, enriched):
-        """Merge intelligent unifié gérant tous les cas"""
-        import copy
-        
-        print(f"🔍 Smart Merge:")
-        print(f"   Original: {original.get('name')} - {len(original.get('contains', []))} éléments")
-        print(f"   Enriched: {enriched.get('name')} - Type: {enriched.get('type', 'N/A')}")
-        
-        result = copy.deepcopy(original)
-        
-        # ÉTAPE 1: Merge du niveau racine
-        if (enriched.get("name") == original.get("name") or 
-            enriched.get("type", "").lower() == "systeme"):
-            # Merger les propriétés du système racine
-            for key in ["entry", "name", "type"]:
-                if key in enriched and enriched[key] != original.get(key):
-                    result[key] = enriched[key]
-                    print(f"  📝 Propriété racine mise à jour: {key}")
-        
-        # ÉTAPE 2: Traitement des enfants
-        children_to_process = []
-        
-        if "contains" in enriched:
-            # Structure complète → traiter chaque enfant
-            children_to_process = enriched["contains"]
-            print(f"  📂 Structure complète: {len(children_to_process)} enfants à traiter")
-        else:
-            # Élément isolé → traiter enriched lui-même comme enfant
-            children_to_process = [enriched]
-            print(f"  🎯 Élément isolé: {enriched.get('name')} à traiter")
-        
-        # ÉTAPE 3: Traitement de chaque enfant
-        for child in children_to_process:
-            if not isinstance(child, dict):
-                continue
-                
-            processed = self._process_child(result, child)
-            if processed:
-                print(f"  ✅ Enfant traité: {child.get('name', 'Sans nom')}")
-        
-        return result
-    
-    def _process_child(self, parent_system, child):
-        """Traite un enfant selon la logique ID/type/location"""
-        
-        # CAS 1: Enfant avec ID → Mise à jour
-        if "id" in child or "entity_id" in child:
-            return self._update_existing_element(parent_system, child)
-        
-        # CAS 2: Enfant sans ID + type "Systeme" → Merge avec système racine
-        elif child.get("type", "").lower() == "systeme":
-            return self._merge_with_root_system(parent_system, child)
-        
-        # CAS 3: Enfant sans ID + location valide → Ajout au bon parent
-        elif "location" in child:
-            parent_found = self._find_parent_by_name(parent_system, child["location"])
-            if parent_found:
-                return self._add_to_parent(parent_found, child)
-            else:
-                print(f"  ⚠️ Location '{child['location']}' introuvable, ajout à la racine")
-                return self._add_to_system_contains(parent_system, child)
-        
-        # CAS 4: Fallback → Ajout au contains racine
-        else:
-            return self._add_to_system_contains(parent_system, child)
-    
-    def _update_existing_element(self, parent_system, element):
-        """Met à jour un élément existant par son ID"""
-        element_id = element.get("id") or element.get("entity_id")
-        
-        def find_and_update(container):
-            for i, item in enumerate(container.get("contains", [])):
-                if item.get("id") == element_id or item.get("entity_id") == element_id:
-                    container["contains"][i] = element
-                    print(f"    🔄 Mise à jour ID {element_id}: {element.get('name')}")
-                    return True
-                if "contains" in item and find_and_update(item):
-                    return True
-            return False
-        
-        return find_and_update(parent_system)
-    
-    def _merge_with_root_system(self, parent_system, system_element):
-        """Merge les propriétés d'un système avec le système racine"""
-        for key in ["entry", "name"]:
-            if key in system_element:
-                parent_system[key] = system_element[key]
-                print(f"    🔀 Merge racine {key}")
-        return True
-    
-    def _find_parent_by_name(self, container, name):
-        """Cherche récursivement un élément par nom"""
-        if container.get("name") == name:
-            return container
-        
-        for item in container.get("contains", []):
-            found = self._find_parent_by_name(item, name)
-            if found:
-                return found
-        return None
-    
-    def _add_to_parent(self, parent, child):
-        """Ajoute un enfant au contains d'un parent"""
-        parent.setdefault("contains", [])
-        
-        # Vérifier qu'il n'existe pas déjà
-        existing_names = [item.get("name") for item in parent["contains"]]
-        if child.get("name") not in existing_names:
-            # Nettoyer l'élément (enlever location)
-            clean_child = {k: v for k, v in child.items() if k != "location"}
-            parent["contains"].append(clean_child)
-            print(f"    ➕ Ajouté à {parent.get('name')}: {child.get('name')}")
-            return True
-        else:
-            print(f"    ⚠️ Déjà existant dans {parent.get('name')}: {child.get('name')}")
-            return False
-    
-    def _add_to_system_contains(self, system, child):
-        """Ajoute un enfant au contains du système racine"""
-        return self._add_to_parent(system, child)
