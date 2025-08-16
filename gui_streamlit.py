@@ -150,7 +150,8 @@ def main():
                 "JSON": os.path.exists("univers_eneria_filtered.json"),
                 "JSONL": os.path.exists("univers_eneria_connaissance_privee.jsonl"),
                 "PDF": os.path.exists("univers_eneria_connaissance_privee.pdf"),
-                "Markdown": os.path.exists("univers_eneria_connaissance.md")
+                "Markdown": os.path.exists("univers_eneria_connaissance.md"),
+                "Réseau FTL": os.path.exists("univers_eneria_reseau_ftl.json")
             }
             
             for format_name, exists in files_status.items():
@@ -206,6 +207,63 @@ def main():
         # Informations supplémentaires
         st.markdown("---")
         st.info("💡 **Conseils pour GPT Custom** : Uploadez le fichier Markdown dans les 'Knowledge' de votre GPT. Il contiendra toutes les informations sur votre univers d'Eneria pour des générations cohérentes.")
+        
+        # Section dédiée au réseau FTL
+        st.markdown("---")
+        st.markdown("#### 🌌 Réseau FTL - Base de données spécialisée")
+        
+        col1, col2 = st.columns([2, 1])
+        
+        with col1:
+            st.markdown("""
+            **Base de données du réseau de transport FTL** :
+            - Toutes les connexions entre systèmes stellaires
+            - Données structurées pour analyse de graphe
+            - Informations sur les distances et statuts des liaisons
+            - Format compatible avec les outils de visualisation réseau
+            - Idéal pour l'analyse de connectivité et la planification de routes
+            """)
+            
+            if os.path.exists("univers_eneria_reseau_ftl.json"):
+                # Afficher les statistiques du réseau
+                import json
+                try:
+                    with open("univers_eneria_reseau_ftl.json", "r", encoding="utf-8") as f:
+                        ftl_data = json.load(f)
+                    
+                    col1a, col1b, col1c = st.columns(3)
+                    with col1a:
+                        st.metric("Systèmes", len(ftl_data.get("systems", {})))
+                    with col1b:
+                        st.metric("Connexions", len(ftl_data.get("connections", [])))
+                    with col1c:
+                        # Système le plus connecté
+                        if ftl_data.get("systems"):
+                            most_connected = max(ftl_data["systems"].items(), 
+                                               key=lambda x: x[1]["connections_count"])
+                            st.metric("Hub principal", f"{most_connected[0]} ({most_connected[1]['connections_count']})")
+                except:
+                    st.warning("Erreur lors du chargement des statistiques FTL")
+        
+        with col2:
+            if os.path.exists("univers_eneria_reseau_ftl.json"):
+                # Bouton de téléchargement pour le réseau FTL
+                with open("univers_eneria_reseau_ftl.json", "r", encoding="utf-8") as f:
+                    ftl_content = f.read()
+                
+                st.download_button(
+                    label="⬇️ Télécharger Réseau FTL",
+                    data=ftl_content,
+                    file_name="univers_eneria_reseau_ftl.json",
+                    mime="application/json",
+                    use_container_width=True
+                )
+                
+                file_size = os.path.getsize("univers_eneria_reseau_ftl.json")
+                size_kb = file_size / 1024
+                st.metric("Taille fichier", f"{size_kb:.1f} KB")
+            else:
+                st.warning("Fichier réseau FTL non trouvé. Effectuez d'abord une mise à jour.")
     
     # Page Génération
     elif page == "🚀 Génération":

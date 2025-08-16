@@ -211,3 +211,86 @@ def export_pdf(lignes, chemin):
 
     pdf.output(chemin)
     print(f"✅ PDF exporté avec succès vers : {chemin}")
+
+def export_ftl_json(data, chemin):
+    """
+    Exporte spécifiquement les données du réseau FTL dans un fichier JSON dédié.
+    
+    :param data: Dictionnaire contenant toutes les données, incluant 'Liaison FTL'
+    :param chemin: Chemin du fichier JSON à créer
+    """
+    
+    # Extraire les données FTL
+    ftl_data = data.get("Liaison FTL", [])
+    
+    if not ftl_data:
+        print("⚠️ Aucune donnée de liaison FTL trouvée dans les données.")
+        return
+    
+    # Créer la structure du réseau FTL
+    reseau_ftl = {
+        "metadata": {
+            "description": "Réseau de transport FTL entre les systèmes stellaires",
+            "total_liaisons": len(ftl_data),
+            "generated_at": "auto-generated from Kanka data",
+            "format": "graph_data"
+        },
+        "systems": {},
+        "connections": ftl_data,
+        "graph": {
+            "nodes": [],
+            "edges": []
+        }
+    }
+    
+    # Extraire la liste unique des systèmes
+    systems_set = set()
+    for lien in ftl_data:
+        systems_set.add(lien.get("source"))
+        systems_set.add(lien.get("target"))
+    
+    # Créer les données des systèmes
+    for system_name in systems_set:
+        if system_name:  # Éviter les noms vides
+            reseau_ftl["systems"][system_name] = {
+                "name": system_name,
+                "connections_count": sum(1 for lien in ftl_data 
+                                       if lien.get("source") == system_name or lien.get("target") == system_name)
+            }
+    
+    # Créer les données pour représentation en graphe
+    # Nodes
+    for system_name in systems_set:
+        if system_name:
+            reseau_ftl["graph"]["nodes"].append({
+                "id": system_name,
+                "label": system_name,
+                "group": "system"
+            })
+    
+    # Edges  
+    for i, lien in enumerate(ftl_data):
+        source = lien.get("source")
+        target = lien.get("target")
+        if source and target:
+            edge = {
+                "id": f"ftl_{i}",
+                "from": source,
+                "to": target,
+                "label": lien.get("status", ""),
+                "weight": lien.get("distance", 1),
+                "type": "ftl_connection"
+            }
+            if lien.get("prive"):
+                edge["private"] = True
+            reseau_ftl["graph"]["edges"].append(edge)
+    
+    # Sauvegarder le fichier JSON
+    with open(chemin, "w", encoding="utf-8") as f:
+        json.dump(reseau_ftl, f, ensure_ascii=False, indent=2)
+    
+    print(f"✅ Réseau FTL exporté vers : {chemin}")
+    print(f"📊 Statistiques:")
+    print(f"   - {len(reseau_ftl['systems'])} systèmes")
+    print(f"   - {len(reseau_ftl['connections'])} liaisons FTL")
+    print(f"   - Format graphe avec {len(reseau_ftl['graph']['nodes'])} nœuds et {len(reseau_ftl['graph']['edges'])} arêtes")

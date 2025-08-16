@@ -1,9 +1,9 @@
 import shutil, os , json, copy
 
-from kanka_knowledge.config import ZIP_PATH, OUTPUT_JSON, OUTPUT_JSON_FILTERED, OUTPUT_JSONL_TOUT, OUTPUT_JSONL_PUBLIC, OUTPUT_PDF_TOUT, OUTPUT_MARKDOWN
+from kanka_knowledge.config import ZIP_PATH, OUTPUT_JSON, OUTPUT_JSON_FILTERED, OUTPUT_JSONL_TOUT, OUTPUT_JSONL_PUBLIC, OUTPUT_PDF_TOUT, OUTPUT_MARKDOWN, OUTPUT_FTL_JSON
 from kanka_knowledge.extract import extract
 from kanka_knowledge.prepare import prepare
-from kanka_knowledge.export import export_json, export_jsonl, export_pdf, export_markdown
+from kanka_knowledge.export import export_json, export_jsonl, export_pdf, export_markdown, export_ftl_json
 from kanka_knowledge.filter import filter
 from kanka_knowledge.shape import shape
 
@@ -24,6 +24,10 @@ def update_knowledge_base():
         dossier_temp, data = extract(ZIP_PATH)
         data = prepare(data)
         export_json(data, OUTPUT_JSON)
+        
+        # Export spécifique du réseau FTL
+        export_ftl_json(data, OUTPUT_FTL_JSON)
+        
         filtered_data = filter(data)
         export_json(filtered_data, OUTPUT_JSON_FILTERED)
 

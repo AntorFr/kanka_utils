@@ -31,6 +31,7 @@ OUTPUT_JSONL_TOUT = "univers_eneria_connaissance_privee.jsonl"
 OUTPUT_PDF_TOUT = "univers_eneria_connaissance_privee.pdf"
 OUTPUT_MARKDOWN = "univers_eneria_connaissance.md"
 OUTPUT_JSONL_PUBLIC = "univers_eneria_connaissance_publique.jsonl"
+OUTPUT_FTL_JSON = "univers_eneria_reseau_ftl.json"
 
 # === MAPPAGE DES CATÉGORIES LISIBLES ===
 IGNORER_CATEGORIES = {"settings", "gallery", "maps"}
