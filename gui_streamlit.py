@@ -423,27 +423,15 @@ def main():
             with col2:
                 st.markdown("### Actions disponibles")
                 
-                # Workflow complet
-                if st.button("🔄 Workflow complet (Export + Synthèse + Import)", use_container_width=True):
+                # Bouton unique pour le workflow complet
+                if st.button("🔄 Générer synthèse (Export + Génération + Import)", use_container_width=True):
                     if has_kanka_id:
                         with st.spinner("Exécution du workflow complet..."):
                             try:
                                 generate_system_synthesis(selected_system)
-                                show_success("Workflow complet terminé ! Le système a été mis à jour dans Kanka avec sa synthèse.")
+                                show_success("Synthèse générée et mise à jour dans Kanka !")
                             except Exception as e:
                                 show_error(f"Erreur lors du workflow : {str(e)}")
-                    else:
-                        show_error("Le système doit avoir un ID Kanka pour le workflow complet.")
-                
-                # Synthèse seule (même fonction maintenant)
-                if st.button("✨ Générer synthèse (workflow complet)", use_container_width=True):
-                    if has_kanka_id:
-                        with st.spinner("Génération de la synthèse..."):
-                            try:
-                                generate_system_synthesis(selected_system)
-                                show_success(f"Synthèse générée pour '{selected_system}' !")
-                            except Exception as e:
-                                show_error(f"Erreur lors de la génération : {str(e)}")
                     else:
                         show_error("Le système doit avoir un ID Kanka pour générer une synthèse.")
         else:
