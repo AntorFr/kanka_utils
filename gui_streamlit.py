@@ -85,6 +85,7 @@ def main():
         [
             "🏠 Accueil",
             "📚 Base de connaissance", 
+            "🌌 Réseau FTL",
             "🚀 Génération",
             "📥 Import/Export",
             "✨ Enrichissement",
@@ -264,6 +265,21 @@ def main():
                 st.metric("Taille fichier", f"{size_kb:.1f} KB")
             else:
                 st.warning("Fichier réseau FTL non trouvé. Effectuez d'abord une mise à jour.")
+    
+    # Page Réseau FTL
+    elif page == "🌌 Réseau FTL":
+        # Importer et exécuter la page du réseau FTL
+        try:
+            import sys
+            sys.path.append(os.path.join(os.path.dirname(__file__), 'pages'))
+            from reseau_ftl import main as ftl_main
+            ftl_main()
+        except ImportError as e:
+            st.error(f"❌ Erreur d'import de la page Réseau FTL: {e}")
+            st.info("Assurez-vous que le fichier `pages/reseau_ftl.py` existe.")
+        except Exception as e:
+            st.error(f"❌ Erreur lors de l'affichage du réseau FTL: {e}")
+            st.exception(e)
     
     # Page Génération
     elif page == "🚀 Génération":
