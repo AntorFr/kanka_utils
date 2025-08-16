@@ -48,6 +48,14 @@ def generate_system(nom_systeme: str = "", contexte=None):
     import_location_tree(systeme)
     save_system_json(systeme, nom_systeme)
     print(f"✅ Système '{nom_systeme}' généré et importé.")
+    
+    # Génération automatique de la synthèse
+    print(f"📝 Génération automatique de la synthèse du système...")
+    try:
+        generate_system_synthesis(nom_systeme)
+        print(f"✅ Synthèse du système '{nom_systeme}' générée automatiquement.")
+    except Exception as e:
+        print(f"⚠️ Erreur lors de la génération de synthèse : {e}")
 
 def generate_structure(nom_structure: str = "", type_structure: str = "", contexte=None, location: str = ""):
     """
@@ -134,6 +142,14 @@ def enrich_system(nom_systeme: str, prompt: str, contexte=None):
     print(f"🚀 Import automatique des nouveaux éléments dans Kanka...")
     import_system(nom_systeme)
     print(f"✅ Système '{nom_systeme}' enrichi et mis à jour dans Kanka.")
+    
+    # Génération automatique de la synthèse
+    print(f"📝 Génération automatique de la synthèse du système...")
+    try:
+        generate_system_synthesis(nom_systeme)
+        print(f"✅ Synthèse du système '{nom_systeme}' générée automatiquement.")
+    except Exception as e:
+        print(f"⚠️ Erreur lors de la génération de synthèse : {e}")
 
 def enrich_structure(nom_structure: str, prompt: str, contexte=None, location: str = ""):
     """
@@ -154,10 +170,15 @@ def enrich_structure(nom_structure: str, prompt: str, contexte=None, location: s
 
 def generate_system_synthesis(nom_systeme: str):
     """
-    Génère une synthèse automatique du système en analysant son contenu et en créant des liens Kanka.
+    Génère une synthèse automatique du système avec workflow complet :
+    1/3 - Export depuis Kanka
+    2/3 - Génération de la synthèse
+    3/3 - Import vers Kanka
     """
     json_path = os.path.join(GENERATED_SYSTEM_DIR, f"{nom_systeme}.json")
     
+    # 1/3 - Export depuis Kanka pour avoir les données les plus récentes
+    print(f"1/3 - Export du système '{nom_systeme}' depuis Kanka...")
     with open(json_path, "r", encoding="utf-8") as f:
         system_data = json.load(f)
     
@@ -165,15 +186,27 @@ def generate_system_synthesis(nom_systeme: str):
         print(f"❌ Le système '{nom_systeme}' n'a pas d'ID Kanka. Importez-le d'abord.")
         return
     
-    # Utiliser l'agent pour générer la synthèse
+    # Export depuis Kanka avec l'ID pour avoir les données fraîches
+    export_system_from_kanka(system_data["id"])
+    
+    # Recharger les données exportées
+    with open(json_path, "r", encoding="utf-8") as f:
+        system_data = json.load(f)
+    
+    # 2/3 - Génération de la synthèse
+    print(f"2/3 - Génération de la synthèse du système '{nom_systeme}'...")
     agent = SWNAgent()
     updated_entry = agent.generate_system_synthesis(system_data)
     
-    # Mettre à jour le système
+    # Mettre à jour le système avec la nouvelle synthèse
     system_data["entry"] = updated_entry
     
-    # Sauvegarder
+    # Sauvegarder localement
     save_system_json(system_data, nom_systeme)
+    
+    # 3/3 - Import vers Kanka
+    print(f"3/3 - Import du système '{nom_systeme}' vers Kanka...")
+    import_system(nom_systeme)
     
     # Compter les éléments pour l'affichage
     total_elements = 0
@@ -185,7 +218,7 @@ def generate_system_synthesis(nom_systeme: str):
             return count
         total_elements = count_elements(system_data)
     
-    print(f"✅ Synthèse générée pour le système '{nom_systeme}' avec {total_elements} éléments liés.")
+    print(f"✅ Synthèse générée et mise à jour dans Kanka pour le système '{nom_systeme}' avec {total_elements} éléments liés.")
     return updated_entry
 
 def main():
