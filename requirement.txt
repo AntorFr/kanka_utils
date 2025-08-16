@@ -1,7 +1,37 @@
+# Core dependencies
 requests>=2.31.0
+openai>=1.13.0
+python-dotenv>=1.0.0
+numpy>=1.24.0
+
+# File format exports
 fpdf2>=2.7.8
 weasyprint>=60.1
-openai>=1.13.0
+
+# RAG and embeddings
 faiss-cpu>=1.7.4
 tqdm>=4.66.0
-python-dotenv>=1.0.0    # (optionnel) pour charger la clé API depuis un fichier .env
+
+# Streamlit interface
+streamlit>=1.28.0
+
+# Graph visualization for FTL network
+streamlit-agraph>=0.0.45
+plotly>=6.3.0
+networkx>=3.5
+
+# HTML parsing
+html5lib>=1.1
+
+# Additional utilities (mostly built-in but may need explicit versions)
+# zipfile - built-in
+# tempfile - built-in  
+# json - built-in
+# os - built-in
+# re - built-in
+# shutil - built-in
+# copy - built-in
+# glob - built-in
+# time - built-in
+# traceback - built-in
+# typing - built-in
