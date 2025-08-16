@@ -1,4 +1,4 @@
-import shutil, os , json
+import shutil, os , json, copy
 
 from kanka_knowledge.config import ZIP_PATH, OUTPUT_JSON, OUTPUT_JSON_FILTERED, OUTPUT_JSONL_TOUT, OUTPUT_JSONL_PUBLIC, OUTPUT_PDF_TOUT, OUTPUT_MARKDOWN
 from kanka_knowledge.extract import extract
@@ -116,20 +116,33 @@ def enrich_system(nom_systeme: str, prompt: str, contexte=None):
     def smart_merge(original, enriched):
         """Merge intelligent pour éviter l'écrasement de systèmes entiers"""
         
-        # Vérifier si l'enrichissement a généré des éléments isolés
-        # au lieu d'enrichir le système existant
+        # VERIFICATION CRITIQUE : Si l'IA a généré un système complètement différent 
+        # au lieu d'enrichir l'existant, c'est un problème majeur
+        
+        # Cas 1: L'enriched n'a pas de "contains" mais l'original en avait
+        if "contains" in original and original["contains"] and "contains" not in enriched:
+            print("🚨 ERREUR DÉTECTÉE: L'IA a écrasé un système complet ! Restauration...")
+            print(f"   Original avait {len(original['contains'])} éléments")
+            print(f"   Enriched n'a pas de structure 'contains'")
+            
+            # Restaurer l'original et ne rien faire
+            return original
+        
+        # Cas 2: L'original avait des éléments mais l'enriched en a beaucoup moins
         original_count = len(original.get("contains", []))
         enriched_count = len(enriched.get("contains", []))
         
-        # Si l'original avait beaucoup d'éléments et l'enriched en a très peu,
-        # c'est probablement que l'IA a généré des éléments isolés
-        if original_count > 3 and enriched_count <= 2:
-            print(f"🧠 Détection d'éléments isolés. Ajout aux éléments existants...")
+        # Si l'original avait des éléments et l'enriched en a très peu ou zéro
+        if original_count > 0 and enriched_count <= max(1, original_count // 3):
+            print(f"🚨 PROTECTION ANTI-ÉCRASEMENT ACTIVÉE !")
+            print(f"   Original: {original_count} éléments")
+            print(f"   Enriched: {enriched_count} éléments")
+            print(f"   🔄 Ajout intelligent des nouveaux éléments...")
             
             # Restaurer la structure originale
-            merged_system = original.copy()
+            merged_system = copy.deepcopy(original)
             
-            # Ajouter les nouveaux éléments à la fin
+            # Ajouter les nouveaux éléments sans écraser
             if "contains" in enriched and enriched["contains"]:
                 merged_system.setdefault("contains", [])
                 for new_element in enriched["contains"]:
@@ -137,15 +150,18 @@ def enrich_system(nom_systeme: str, prompt: str, contexte=None):
                     existing_names = [item.get("name", "") for item in merged_system["contains"]]
                     if new_element.get("name", "") not in existing_names:
                         merged_system["contains"].append(new_element)
-                        print(f"  ➕ Ajout de : {new_element.get('name', 'Élément sans nom')}")
+                        print(f"  ➕ Ajout sécurisé de : {new_element.get('name', 'Élément sans nom')}")
             
-            # Mettre à jour la description du système si elle a été enrichie
-            if enriched.get("description") and enriched["description"] != original.get("description"):
-                merged_system["description"] = enriched["description"]
+            # Mettre à jour la description du système si elle a été enrichie et semble valide
+            if (enriched.get("entry") and 
+                len(enriched.get("entry", "")) > len(original.get("entry", "")) // 2):
+                merged_system["entry"] = enriched["entry"]
+                print("  📝 Description du système mise à jour")
             
             return merged_system
         else:
             # L'enrichissement semble correct, utiliser tel quel
+            print("✅ Enrichissement normal détecté")
             return enriched
     
     # Appliquer le smart merge
