@@ -1,4 +1,5 @@
 import os
+import re
 from .config import CATEGORIE_MAP
 from .extract import charger_json_depuis_fichier
 
@@ -225,6 +226,132 @@ def creer_liaisons_ftl(data):
     data["Liaison FTL"] = ftl_links
     return data
 
+def resoudre_references_kanka(data):
+    """
+    Remplace les références [type:entity_id] par [type:entity_id|name] 
+    en récupérant le nom depuis les données.
+    Ne modifie pas les références qui ont déjà un nom [type:entity_id|name].
+    
+    :param data: Dictionnaire contenant toutes les données Kanka
+    :return: Données avec références résolues
+    """
+    
+    # Construire un index entity_id -> name pour tous les types
+    entity_index = {}
+    
+    # Mappage des types de références vers les clés de données
+    type_mapping = {
+        'character': 'characters',
+        'location': 'locations', 
+        'organisation': 'organisations',
+        'organization': 'organisations',  # Variante anglaise
+        'creature': 'creatures',
+        'race': 'races',
+        'item': 'items',
+        'journal': 'journals',
+        'note': 'notes',
+        'tag': 'tags',
+        'map': 'maps',
+        'quest': 'quests',
+        'event': 'events',
+        'vaisseau': 'vaisseau_443',  # Type custom
+        'regle': 'regle_446'  # Type custom
+    }
+    
+    # Construire l'index pour chaque type standard
+    for ref_type, data_key in type_mapping.items():
+        if data_key in data:
+            for item in data[data_key]:
+                if isinstance(item, dict):
+                    # Pour les types standards, utiliser 'id' et chercher 'name'
+                    item_id = item.get('id')
+                    item_name = item.get('name')
+                    
+                    # Pour les types custom, extraire depuis 'entity'
+                    if 'entity' in item and isinstance(item['entity'], dict):
+                        entity = item['entity']
+                        item_id = entity.get('id')
+                        item_name = entity.get('name')
+                    
+                    if item_id and item_name:
+                        entity_index[f"{ref_type}:{item_id}"] = item_name
+    
+    # Ajouter un mapping pour les types non standard qu'on trouve dans les données
+    for category_key, items in data.items():
+        if isinstance(items, list):
+            # Extraire le type du nom de catégorie (ex: "vaisseau_443" -> "vaisseau")
+            if '_' in category_key:
+                type_name = category_key.split('_')[0]
+                for item in items:
+                    if isinstance(item, dict):
+                        item_id = item.get('id')
+                        item_name = item.get('name')
+                        
+                        # Pour les entités custom, chercher dans l'objet 'entity'
+                        if 'entity' in item and isinstance(item['entity'], dict):
+                            entity = item['entity']
+                            item_id = entity.get('id')
+                            item_name = entity.get('name')
+                        
+                        if item_id and item_name:
+                            entity_index[f"{type_name}:{item_id}"] = item_name
+    
+    def remplacer_references_dans_texte(texte):
+        """
+        Remplace les références [type:id] par [type:id|name] dans un texte.
+        """
+        if not isinstance(texte, str):
+            return texte
+            
+        # Pattern pour détecter [type:id] mais pas [type:id|name]
+        pattern = r'\[([a-zA-Z_]+):(\d+)\](?!\|)'
+        
+        def remplacer_reference(match):
+            ref_type = match.group(1).lower()
+            entity_id = match.group(2)
+            ref_key = f"{ref_type}:{entity_id}"
+            
+            # Chercher le nom dans notre index
+            name = entity_index.get(ref_key)
+            if name:
+                return f"[{ref_type}:{entity_id}|{name}]"
+            else:
+                # Si on ne trouve pas le nom, on laisse la référence telle quelle
+                # print(f"⚠️ Référence non résolue: [{ref_type}:{entity_id}]")
+                return match.group(0)
+        
+        return re.sub(pattern, remplacer_reference, texte)
+    
+    def traiter_recursif(obj):
+        """
+        Traite récursivement tous les champs de type string dans l'objet.
+        """
+        if isinstance(obj, dict):
+            for key, value in obj.items():
+                if isinstance(value, str):
+                    obj[key] = remplacer_references_dans_texte(value)
+                else:
+                    traiter_recursif(value)
+        elif isinstance(obj, list):
+            for i, item in enumerate(obj):
+                if isinstance(item, str):
+                    obj[i] = remplacer_references_dans_texte(item)
+                else:
+                    traiter_recursif(item)
+    
+    # Traiter toutes les données
+    traiter_recursif(data)
+    
+    print(f"✅ Résolution des références Kanka terminée. Index: {len(entity_index)} entités.")
+    
+    # Afficher quelques exemples de l'index pour debug
+    if entity_index:
+        print("📝 Exemples d'entités indexées:")
+        for i, (ref, name) in enumerate(list(entity_index.items())[:5]):
+            print(f"   {ref} -> {name}")
+    
+    return data
+
 def prepare(data_raw):
     data = data_raw
     #data = normaliser_categorie(data)
@@ -235,6 +362,9 @@ def prepare(data_raw):
     data = enrichir_tags(data)
     data = enrichir_locations(data)
     data = creer_liaisons_ftl(data)
+    
+    # Résoudre les références Kanka [type:id] -> [type:id|name]
+    data = resoudre_references_kanka(data)
 
     return data
 
