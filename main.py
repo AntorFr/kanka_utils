@@ -82,6 +82,60 @@ def export_all_systems():
     export_all_systems_from_kanka()
     print("✅ Tous les systèmes ont été exportés.")
 
+def export_all_systems_with_progress(progress_callback=None):
+    """
+    Exporte tous les systèmes de la campagne Kanka avec suivi de progression.
+    :param progress_callback: Fonction appelée pour chaque système (current, total, system_name)
+    """
+    from kanka_api.location import fetch_location_from_kanka
+    from kanka_api.utils import kanka_api_request
+    from kanka_api.config import KANKA_API_URL, CAMPAIGN_ID, HEADERS
+    
+    # Récupérer toutes les locations de la campagne (pagination)
+    all_locations = []
+    page = 1
+    
+    if progress_callback:
+        progress_callback(0, 0, "Récupération de la liste des systèmes...")
+    
+    while True:
+        url = f"{KANKA_API_URL}/campaigns/{CAMPAIGN_ID}/locations"
+        resp = kanka_api_request('get', url, headers=HEADERS, params={"page": page})
+        if resp.status_code != 200:
+            raise Exception(f"Erreur récupération des locations (page {page}): {resp.status_code} {resp.text}")
+        data = resp.json()
+        all_locations.extend(data["data"])
+        if not data.get("links", {}).get("next"):
+            break
+        page += 1
+
+    # Filtrer les systèmes
+    systems = [loc for loc in all_locations if loc.get("type") == "System"]
+    total_systems = len(systems)
+    
+    if progress_callback:
+        progress_callback(0, total_systems, f"{total_systems} systèmes trouvés")
+
+    for i, system in enumerate(systems, 1):
+        system_name = system.get("name", f"Système {system['id']}")
+        
+        if progress_callback:
+            progress_callback(i, total_systems, f"Export en cours: {system_name}")
+        
+        try:
+            system_json, system_name = fetch_location_from_kanka(system["id"])
+            save_system_json(system_json, system_name)
+            print(f"✅ Système '{system_name}' exporté.")
+        except Exception as e:
+            print(f"❌ Erreur lors de l'export de {system_name}: {e}")
+            if progress_callback:
+                progress_callback(i, total_systems, f"Erreur: {system_name}")
+    
+    if progress_callback:
+        progress_callback(total_systems, total_systems, "Export terminé!")
+    
+    print("✅ Tous les systèmes ont été exportés.")
+
 def import_system(nom_systeme: str):
     """
     Importe un système depuis un fichier JSON dans Kanka.
@@ -170,15 +224,10 @@ def enrich_structure(nom_structure: str, prompt: str, contexte=None, location: s
 
 def generate_system_synthesis(nom_systeme: str):
     """
-    Génère une synthèse automatique du système avec workflow complet :
-    1/3 - Export depuis Kanka
-    2/3 - Génération de la synthèse
-    3/3 - Import vers Kanka
+    Génère une synthèse automatique du système en analysant son contenu et en créant des liens Kanka.
     """
     json_path = os.path.join(GENERATED_SYSTEM_DIR, f"{nom_systeme}.json")
     
-    # 1/3 - Export depuis Kanka pour avoir les données les plus récentes
-    print(f"1/3 - Export du système '{nom_systeme}' depuis Kanka...")
     with open(json_path, "r", encoding="utf-8") as f:
         system_data = json.load(f)
     
@@ -186,27 +235,15 @@ def generate_system_synthesis(nom_systeme: str):
         print(f"❌ Le système '{nom_systeme}' n'a pas d'ID Kanka. Importez-le d'abord.")
         return
     
-    # Export depuis Kanka avec l'ID pour avoir les données fraîches
-    export_system_from_kanka(system_data["id"])
-    
-    # Recharger les données exportées
-    with open(json_path, "r", encoding="utf-8") as f:
-        system_data = json.load(f)
-    
-    # 2/3 - Génération de la synthèse
-    print(f"2/3 - Génération de la synthèse du système '{nom_systeme}'...")
+    # Utiliser l'agent pour générer la synthèse
     agent = SWNAgent()
     updated_entry = agent.generate_system_synthesis(system_data)
     
-    # Mettre à jour le système avec la nouvelle synthèse
+    # Mettre à jour le système
     system_data["entry"] = updated_entry
     
-    # Sauvegarder localement
+    # Sauvegarder
     save_system_json(system_data, nom_systeme)
-    
-    # 3/3 - Import vers Kanka
-    print(f"3/3 - Import du système '{nom_systeme}' vers Kanka...")
-    import_system(nom_systeme)
     
     # Compter les éléments pour l'affichage
     total_elements = 0
@@ -218,7 +255,7 @@ def generate_system_synthesis(nom_systeme: str):
             return count
         total_elements = count_elements(system_data)
     
-    print(f"✅ Synthèse générée et mise à jour dans Kanka pour le système '{nom_systeme}' avec {total_elements} éléments liés.")
+    print(f"✅ Synthèse générée pour le système '{nom_systeme}' avec {total_elements} éléments liés.")
     return updated_entry
 
 def main():

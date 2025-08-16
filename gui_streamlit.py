@@ -7,7 +7,7 @@ from typing import Optional, List
 # Import des fonctions du main
 from main import (
     update_knowledge_base, generate_system, generate_structure, 
-    export_system_from_kanka, export_all_systems, import_system,
+    export_system_from_kanka, export_all_systems, export_all_systems_with_progress, import_system,
     import_location, import_characters, enrich_system, enrich_structure,
     generate_system_synthesis
 )
@@ -283,13 +283,30 @@ def main():
                 st.markdown("#### Exporter tous les systèmes")
                 st.warning("⚠️ Cette opération peut prendre du temps selon le nombre de systèmes.")
                 if st.button("📥 Exporter tous les systèmes", use_container_width=True):
-                    with st.spinner("Export de tous les systèmes en cours..."):
-                        try:
-                            export_all_systems()
-                            show_success("Tous les systèmes ont été exportés !")
-                            st.rerun()
-                        except Exception as e:
-                            show_error(f"Erreur lors de l'export : {str(e)}")
+                    
+                    # Conteneurs pour la progression
+                    progress_bar = st.progress(0)
+                    status_text = st.empty()
+                    
+                    try:
+                        def update_progress(current, total, message):
+                            if total > 0:
+                                progress = current / total
+                                progress_bar.progress(progress)
+                            status_text.text(f"{message} ({current}/{total})")
+                        
+                        export_all_systems_with_progress(update_progress)
+                        
+                        # Finaliser
+                        progress_bar.progress(1.0)
+                        status_text.empty()
+                        show_success("Tous les systèmes ont été exportés !")
+                        st.rerun()
+                        
+                    except Exception as e:
+                        progress_bar.empty()
+                        status_text.empty()
+                        show_error(f"Erreur lors de l'export : {str(e)}")
         
         with tab2:
             st.markdown("### Importer vers Kanka")
