@@ -476,34 +476,42 @@ class SWNAgent:
             # Nettoyage robuste des anciennes synthèses
             original_entry = system_data.get("entry", "")
             
-            def clean_existing_synthesis(text):
-                """Nettoie les synthèses existantes avec plusieurs patterns"""
-                import re
-                
-                # Pattern 1: <h3>Synthèse du système jusqu'à la fin
-                text = re.sub(r'<h3>Synthèse du système.*$', '', text, flags=re.DOTALL | re.IGNORECASE)
-                
-                # Pattern 2: ## Synthèse jusqu'à la fin
-                text = re.sub(r'## Synthèse.*$', '', text, flags=re.DOTALL | re.IGNORECASE)
-                
-                # Pattern 3: **Synthèse** jusqu'à la fin 
-                text = re.sub(r'\*\*Synthèse\*\*.*$', '', text, flags=re.DOTALL | re.IGNORECASE)
-                
-                # Pattern 4: Synthèse: jusqu'à la fin
-                text = re.sub(r'Synthèse\s*:.*$', '', text, flags=re.DOTALL | re.IGNORECASE)
-                
-                # Nettoyer les espaces et lignes vides en trop
-                text = re.sub(r'\n\s*\n\s*\n', '\n\n', text)
-                text = text.strip()
-                
-                return text
+            # Nettoyer toutes les synthèses existantes (multiples variantes possibles)
+            patterns_to_clean = [
+                "<p><span style=\"color:rgb(205,214,244);font-size:1.5rem;background-color:unset;\">Synthèse du système",  # Format Kanka avec style
+                "<p><span style=\"color:rgb(205,214,244);font-size:1.5rem;\">Synthèse du système",  # Variante format Kanka
+                "<h3>Synthèse du système",
+                "<h2>Synthèse du système", 
+                "<h4>Synthèse du système",
+                "Synthèse du système",
+                "<h3>Synthese du systeme",  # sans accents
+                "<h2>Synthese du systeme",
+                "<h4>Synthese du systeme"
+            ]
             
-            # Appliquer le nettoyage
-            original_entry = clean_existing_synthesis(original_entry)
+            cleaned_entry = original_entry
+            for pattern in patterns_to_clean:
+                if pattern in cleaned_entry:
+                    # Trouver le début de la synthèse et tout supprimer après
+                    cleaned_entry = cleaned_entry.split(pattern)[0].strip()
+                    print(f"🧹 Nettoyage de l'ancienne synthèse détectée avec pattern: {pattern}")
+                    break
             
-            # Ajouter la nouvelle synthèse
+            original_entry = cleaned_entry
+            
+            # Si la nouvelle synthèse est vide, garder seulement la description originale
+            if not synthesis_content:
+                return original_entry
+            
+            # Créer la nouvelle synthèse avec titre
             synthesis_with_title = f"<h3>Synthèse du système {system_data['name']}</h3>\n{synthesis_content}"
-            updated_entry = f"{original_entry}\n\n{synthesis_with_title}".strip()
+            
+            # Combiner : description originale + nouvelle synthèse (remplacement complet)
+            if original_entry.strip():
+                updated_entry = f"{original_entry}\n\n{synthesis_with_title}"
+            else:
+                # Si pas de description originale, juste la synthèse
+                updated_entry = synthesis_with_title
             
             return updated_entry
             
