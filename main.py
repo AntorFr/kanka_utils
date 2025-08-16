@@ -100,8 +100,15 @@ def import_characters(json_path: str):
 
 def enrich_system(nom_systeme: str, prompt: str, contexte=None):
     """
-    Enrichit un système existant à partir de son nom et d'un prompt, puis sauvegarde le résultat.
+    Enrichit un système stellaire existant en utilisant GPT-4o.
+    
+    Args:
+        nom_systeme: Nom du système à enrichir
+        prompt: Instructions d'enrichissement
+        contexte: Contexte optionnel
     """
+    print(f"🚀 Enrichissement du système '{nom_systeme}'...")
+    
     json_path = os.path.join(GENERATED_SYSTEM_DIR, f"{nom_systeme}.json")
     agent = SWNAgent()
     
@@ -109,100 +116,24 @@ def enrich_system(nom_systeme: str, prompt: str, contexte=None):
     with open(json_path, "r", encoding="utf-8") as f:
         original_system = json.load(f)
     
+    print(f"📂 Système original chargé: {len(original_system.get('contains', []))} éléments")
+    
     # Faire l'enrichissement
     enriched_system, nom = agent.enrich_system(original_system, prompt, contexte)
     
-    # Smart merge : éviter l'écrasement de systèmes complets
-    def smart_merge(original, enriched):
-        """Merge intelligent basé sur les IDs : seuls les éléments sans ID sont nouveaux"""
-        
-        # Si l'enriched est exactement identique à l'original, pas d'enrichissement
-        if enriched == original:
-            print("ℹ️ Aucun enrichissement détecté")
-            return original
-            
-        # Commencer avec l'original comme base
-        result = copy.deepcopy(original)
-        
-        def merge_new_elements(target_container, source_container, path=""):
-            """Merge récursif des éléments sans ID dans la bonne hiérarchie"""
-            
-            if not isinstance(source_container, dict) or "contains" not in source_container:
-                return
-                
-            for new_element in source_container.get("contains", []):
-                if not isinstance(new_element, dict):
-                    continue
-                    
-                # Si l'élément n'a pas d'ID, c'est un nouvel élément
-                if "id" not in new_element and "entity_id" not in new_element:
-                    # Vérifier qu'il n'existe pas déjà (par nom)
-                    existing_names = [item.get("name", "") for item in target_container.get("contains", [])]
-                    
-                    if new_element.get("name", "") not in existing_names:
-                        target_container.setdefault("contains", [])
-                        target_container["contains"].append(new_element)
-                        print(f"  ➕ Nouvel élément ajouté{path}: {new_element.get('name', 'Sans nom')}")
-                    else:
-                        print(f"  ⚠️ Élément déjà existant ignoré{path}: {new_element.get('name', 'Sans nom')}")
-                        
-                # Si l'élément a un ID, chercher le même ID dans l'original pour merger récursivement
-                elif new_element.get("id") or new_element.get("entity_id"):
-                    element_id = new_element.get("id") or new_element.get("entity_id")
-                    
-                    # Chercher l'élément correspondant dans target_container
-                    for target_element in target_container.get("contains", []):
-                        if (target_element.get("id") == element_id or 
-                            target_element.get("entity_id") == element_id):
-                            # Merger récursivement dans cet élément
-                            merge_new_elements(target_element, new_element, f"{path}/{target_element.get('name', 'Sans nom')}")
-                            break
-        
-        # Commencer le merge depuis la racine
-        merge_new_elements(result, enriched)
-        
-        # Mettre à jour la description principale si elle a été enrichie
-        if (enriched.get("entry") and 
-            enriched.get("entry") != original.get("entry") and
-            len(enriched.get("entry", "")) > len(original.get("entry", "")) * 0.8):
-            result["entry"] = enriched["entry"]
-            print("  📝 Description principale mise à jour")
-            
-        return result
+    print(f"🔍 IA a généré: {enriched_system.get('type', 'Structure')} - {enriched_system.get('name', 'Sans nom')}")
     
-    # Appliquer le smart merge
-    enriched_system = smart_merge(original_system, enriched_system)
+    # Appliquer le smart merge via l'agent
+    enriched_system = agent.smart_merge(original_system, enriched_system)
     
-    # Préserver les IDs existants
-    def preserve_existing_ids(original, enriched):
-        if isinstance(original, dict) and isinstance(enriched, dict):
-            if "id" in original:
-                enriched["id"] = original["id"]
-            if "contains" in original and "contains" in enriched:
-                original_by_name = {item.get("name"): item for item in original.get("contains", []) if isinstance(item, dict)}
-                for enriched_item in enriched.get("contains", []):
-                    if isinstance(enriched_item, dict):
-                        name = enriched_item.get("name")
-                        if name in original_by_name:
-                            preserve_existing_ids(original_by_name[name], enriched_item)
-        return enriched
-    
-    # Préserver les IDs existants
-    enriched_system = preserve_existing_ids(original_system, enriched_system)
-    
-    # Forcer les propriétés originales critiques pour éviter les changements non désirés
-    enriched_system["name"] = original_system["name"]  # Nom original
-    enriched_system["type"] = original_system["type"]  # Type original
-    if "id" in original_system:
-        enriched_system["id"] = original_system["id"]  # ID original
-    
+    # Sauvegarder le système enrichi
     save_system_json(enriched_system, nom_systeme)
+    print(f"✅ Système '{nom_systeme}' enrichi et sauvegardé.")
     
-    # Auto-import des nouveaux éléments dans Kanka
+    # Import automatique dans Kanka
     print(f"🚀 Import automatique des nouveaux éléments dans Kanka...")
     import_system(nom_systeme)
-    
-    print(f"✅ Système '{nom_systeme}' enrichi, sauvegardé et importé dans Kanka.")
+    print(f"✅ Système '{nom_systeme}' enrichi et mis à jour dans Kanka.")
 
 def enrich_structure(nom_structure: str, prompt: str, contexte=None, location: str = ""):
     """

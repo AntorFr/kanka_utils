@@ -518,3 +518,124 @@ class SWNAgent:
         except Exception as e:
             print(f"❌ Erreur lors de la génération de la synthèse : {e}")
             return system_data.get("entry", "")
+
+    def smart_merge(self, original, enriched):
+        """Merge intelligent unifié gérant tous les cas"""
+        import copy
+        
+        print(f"🔍 Smart Merge:")
+        print(f"   Original: {original.get('name')} - {len(original.get('contains', []))} éléments")
+        print(f"   Enriched: {enriched.get('name')} - Type: {enriched.get('type', 'N/A')}")
+        
+        result = copy.deepcopy(original)
+        
+        # ÉTAPE 1: Merge du niveau racine
+        if (enriched.get("name") == original.get("name") or 
+            enriched.get("type", "").lower() == "systeme"):
+            # Merger les propriétés du système racine
+            for key in ["entry", "name", "type"]:
+                if key in enriched and enriched[key] != original.get(key):
+                    result[key] = enriched[key]
+                    print(f"  📝 Propriété racine mise à jour: {key}")
+        
+        # ÉTAPE 2: Traitement des enfants
+        children_to_process = []
+        
+        if "contains" in enriched:
+            # Structure complète → traiter chaque enfant
+            children_to_process = enriched["contains"]
+            print(f"  📂 Structure complète: {len(children_to_process)} enfants à traiter")
+        else:
+            # Élément isolé → traiter enriched lui-même comme enfant
+            children_to_process = [enriched]
+            print(f"  🎯 Élément isolé: {enriched.get('name')} à traiter")
+        
+        # ÉTAPE 3: Traitement de chaque enfant
+        for child in children_to_process:
+            if not isinstance(child, dict):
+                continue
+                
+            processed = self._process_child(result, child)
+            if processed:
+                print(f"  ✅ Enfant traité: {child.get('name', 'Sans nom')}")
+        
+        return result
+    
+    def _process_child(self, parent_system, child):
+        """Traite un enfant selon la logique ID/type/location"""
+        
+        # CAS 1: Enfant avec ID → Mise à jour
+        if "id" in child or "entity_id" in child:
+            return self._update_existing_element(parent_system, child)
+        
+        # CAS 2: Enfant sans ID + type "Systeme" → Merge avec système racine
+        elif child.get("type", "").lower() == "systeme":
+            return self._merge_with_root_system(parent_system, child)
+        
+        # CAS 3: Enfant sans ID + location valide → Ajout au bon parent
+        elif "location" in child:
+            parent_found = self._find_parent_by_name(parent_system, child["location"])
+            if parent_found:
+                return self._add_to_parent(parent_found, child)
+            else:
+                print(f"  ⚠️ Location '{child['location']}' introuvable, ajout à la racine")
+                return self._add_to_system_contains(parent_system, child)
+        
+        # CAS 4: Fallback → Ajout au contains racine
+        else:
+            return self._add_to_system_contains(parent_system, child)
+    
+    def _update_existing_element(self, parent_system, element):
+        """Met à jour un élément existant par son ID"""
+        element_id = element.get("id") or element.get("entity_id")
+        
+        def find_and_update(container):
+            for i, item in enumerate(container.get("contains", [])):
+                if item.get("id") == element_id or item.get("entity_id") == element_id:
+                    container["contains"][i] = element
+                    print(f"    🔄 Mise à jour ID {element_id}: {element.get('name')}")
+                    return True
+                if "contains" in item and find_and_update(item):
+                    return True
+            return False
+        
+        return find_and_update(parent_system)
+    
+    def _merge_with_root_system(self, parent_system, system_element):
+        """Merge les propriétés d'un système avec le système racine"""
+        for key in ["entry", "name"]:
+            if key in system_element:
+                parent_system[key] = system_element[key]
+                print(f"    🔀 Merge racine {key}")
+        return True
+    
+    def _find_parent_by_name(self, container, name):
+        """Cherche récursivement un élément par nom"""
+        if container.get("name") == name:
+            return container
+        
+        for item in container.get("contains", []):
+            found = self._find_parent_by_name(item, name)
+            if found:
+                return found
+        return None
+    
+    def _add_to_parent(self, parent, child):
+        """Ajoute un enfant au contains d'un parent"""
+        parent.setdefault("contains", [])
+        
+        # Vérifier qu'il n'existe pas déjà
+        existing_names = [item.get("name") for item in parent["contains"]]
+        if child.get("name") not in existing_names:
+            # Nettoyer l'élément (enlever location)
+            clean_child = {k: v for k, v in child.items() if k != "location"}
+            parent["contains"].append(clean_child)
+            print(f"    ➕ Ajouté à {parent.get('name')}: {child.get('name')}")
+            return True
+        else:
+            print(f"    ⚠️ Déjà existant dans {parent.get('name')}: {child.get('name')}")
+            return False
+    
+    def _add_to_system_contains(self, system, child):
+        """Ajoute un enfant au contains du système racine"""
+        return self._add_to_parent(system, child)
