@@ -1,0 +1,13 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Lancer Streamlit",
+			"type": "shell",
+			"command": "source .venv/bin/activate && streamlit run gui_streamlit.py",
+			"isBackground": true,
+			"problemMatcher": [],
+			"group": "build"
+		}
+	]
+}

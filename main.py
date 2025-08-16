@@ -112,6 +112,45 @@ def enrich_system(nom_systeme: str, prompt: str, contexte=None):
     # Faire l'enrichissement
     enriched_system, nom = agent.enrich_system(original_system, prompt, contexte)
     
+    # Smart merge : éviter l'écrasement de systèmes complets
+    def smart_merge(original, enriched):
+        """Merge intelligent pour éviter l'écrasement de systèmes entiers"""
+        
+        # Vérifier si l'enrichissement a généré des éléments isolés
+        # au lieu d'enrichir le système existant
+        original_count = len(original.get("contains", []))
+        enriched_count = len(enriched.get("contains", []))
+        
+        # Si l'original avait beaucoup d'éléments et l'enriched en a très peu,
+        # c'est probablement que l'IA a généré des éléments isolés
+        if original_count > 3 and enriched_count <= 2:
+            print(f"🧠 Détection d'éléments isolés. Ajout aux éléments existants...")
+            
+            # Restaurer la structure originale
+            merged_system = original.copy()
+            
+            # Ajouter les nouveaux éléments à la fin
+            if "contains" in enriched and enriched["contains"]:
+                merged_system.setdefault("contains", [])
+                for new_element in enriched["contains"]:
+                    # Vérifier que l'élément n'existe pas déjà
+                    existing_names = [item.get("name", "") for item in merged_system["contains"]]
+                    if new_element.get("name", "") not in existing_names:
+                        merged_system["contains"].append(new_element)
+                        print(f"  ➕ Ajout de : {new_element.get('name', 'Élément sans nom')}")
+            
+            # Mettre à jour la description du système si elle a été enrichie
+            if enriched.get("description") and enriched["description"] != original.get("description"):
+                merged_system["description"] = enriched["description"]
+            
+            return merged_system
+        else:
+            # L'enrichissement semble correct, utiliser tel quel
+            return enriched
+    
+    # Appliquer le smart merge
+    enriched_system = smart_merge(original_system, enriched_system)
+    
     # Préserver les IDs existants
     def preserve_existing_ids(original, enriched):
         if isinstance(original, dict) and isinstance(enriched, dict):
@@ -136,7 +175,12 @@ def enrich_system(nom_systeme: str, prompt: str, contexte=None):
         enriched_system["id"] = original_system["id"]  # ID original
     
     save_system_json(enriched_system, nom_systeme)
-    print(f"✅ Système '{nom_systeme}' enrichi et sauvegardé dans {json_path}.")
+    
+    # Auto-import des nouveaux éléments dans Kanka
+    print(f"🚀 Import automatique des nouveaux éléments dans Kanka...")
+    import_system(nom_systeme)
+    
+    print(f"✅ Système '{nom_systeme}' enrichi, sauvegardé et importé dans Kanka.")
 
 def enrich_structure(nom_structure: str, prompt: str, contexte=None, location: str = ""):
     """
@@ -148,7 +192,12 @@ def enrich_structure(nom_structure: str, prompt: str, contexte=None, location: s
         structure_json = json.load(f)
     enriched_structure, nom = agent.enrich_structure(structure_json, prompt, contexte, location)
     save_system_json(enriched_structure, nom)
-    print(f"✅ Structure '{nom}' enrichie et sauvegardée dans {json_path}.")
+    
+    # Auto-import des nouveaux éléments dans Kanka
+    print(f"🚀 Import automatique des nouveaux éléments dans Kanka...")
+    import_system(nom)
+    
+    print(f"✅ Structure '{nom}' enrichie, sauvegardée et importée dans Kanka.")
 
 def generate_system_synthesis(nom_systeme: str):
     """

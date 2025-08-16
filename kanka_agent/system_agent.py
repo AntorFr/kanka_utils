@@ -266,15 +266,19 @@ class SWNAgent:
                 enrich_text += f"Consigne d'enrichissement :\n{prompt}\n"
             if system_mode:
                 enrich_text += (
-                    f"Enrichie le système stellaire '{main_name}' en gardant tous les corps astraux existants. "
-                    "Enrichie les descriptions existantes et ajoute de nouveaux corps astraux naturels (Planete, Lune, Asteroides, Comete). "
-                    "Pour chaque nouveau corps, donne un nom, un type, une description et des caractéristiques."
+                    f"IMPORTANT : Enrichie le système stellaire '{main_name}' en PRESERVANT ABSOLUMENT tous les corps astraux existants. "
+                    "RESPECTE la structure existante complète et ne modifie PAS les éléments déjà présents. "
+                    "Tu peux enrichir les descriptions existantes et ajouter de nouveaux corps astraux naturels (Planète, Lune, Astéroïdes, Comète). "
+                    "Pour chaque nouveau corps, donne un nom, un type, une description et des caractéristiques. "
+                    "CONSERVE tous les IDs et la hiérarchie existante. Retourne le système COMPLET avec tous les éléments originaux plus les nouveaux."
                 )
             else:
                 enrich_text += (
-                    f"Enrichie la structure artificielle '{main_name}' en gardant tous les éléments existants. "
-                    "Enrichie les descriptions existantes et ajoute de nouveaux éléments artificiels (Station, Colonie, Ruines, Ville, Débris spaciaux). "
-                    "Pour chaque nouvel élément, donne un nom, un type, une description et des caractéristiques."
+                    f"IMPORTANT : Enrichie la structure artificielle '{main_name}' en PRESERVANT ABSOLUMENT tous les éléments existants. "
+                    "RESPECTE la structure existante complète et ne modifie PAS les éléments déjà présents. "
+                    "Tu peux enrichir les descriptions existantes et ajouter de nouveaux éléments artificiels (Station, Colonie, Ruines, Ville, Débris spaciaux). "
+                    "Pour chaque nouvel élément, donne un nom, un type, une description et des caractéristiques. "
+                    "CONSERVE tous les IDs et la hiérarchie existante. Retourne la structure COMPLETE avec tous les éléments originaux plus les nouveaux."
                 )
             user_content = {
                 "role": "user",
@@ -469,16 +473,37 @@ class SWNAgent:
                 print(f"❌ Erreur parsing JSON: {arguments}")
                 return system_data.get("entry", "")
             
-            # Combiner l'ancienne description avec la nouvelle synthèse
+            # Nettoyage robuste des anciennes synthèses
             original_entry = system_data.get("entry", "")
             
-            # Séparer l'ancienne description de la synthèse existante
-            if "<h3>Synthèse du système" in original_entry:
-                original_entry = original_entry.split("<h3>Synthèse du système")[0].strip()
+            def clean_existing_synthesis(text):
+                """Nettoie les synthèses existantes avec plusieurs patterns"""
+                import re
+                
+                # Pattern 1: <h3>Synthèse du système jusqu'à la fin
+                text = re.sub(r'<h3>Synthèse du système.*$', '', text, flags=re.DOTALL | re.IGNORECASE)
+                
+                # Pattern 2: ## Synthèse jusqu'à la fin
+                text = re.sub(r'## Synthèse.*$', '', text, flags=re.DOTALL | re.IGNORECASE)
+                
+                # Pattern 3: **Synthèse** jusqu'à la fin 
+                text = re.sub(r'\*\*Synthèse\*\*.*$', '', text, flags=re.DOTALL | re.IGNORECASE)
+                
+                # Pattern 4: Synthèse: jusqu'à la fin
+                text = re.sub(r'Synthèse\s*:.*$', '', text, flags=re.DOTALL | re.IGNORECASE)
+                
+                # Nettoyer les espaces et lignes vides en trop
+                text = re.sub(r'\n\s*\n\s*\n', '\n\n', text)
+                text = text.strip()
+                
+                return text
             
-            # Ajouter un titre et combiner
+            # Appliquer le nettoyage
+            original_entry = clean_existing_synthesis(original_entry)
+            
+            # Ajouter la nouvelle synthèse
             synthesis_with_title = f"<h3>Synthèse du système {system_data['name']}</h3>\n{synthesis_content}"
-            updated_entry = f"{original_entry}\n\n{synthesis_with_title}"
+            updated_entry = f"{original_entry}\n\n{synthesis_with_title}".strip()
             
             return updated_entry
             
