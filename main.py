@@ -114,55 +114,61 @@ def enrich_system(nom_systeme: str, prompt: str, contexte=None):
     
     # Smart merge : éviter l'écrasement de systèmes complets
     def smart_merge(original, enriched):
-        """Merge intelligent pour éviter l'écrasement de systèmes entiers"""
+        """Merge intelligent basé sur les IDs : seuls les éléments sans ID sont nouveaux"""
         
-        # VERIFICATION CRITIQUE : Si l'IA a généré un système complètement différent 
-        # au lieu d'enrichir l'existant, c'est un problème majeur
-        
-        # Cas 1: L'enriched n'a pas de "contains" mais l'original en avait
-        if "contains" in original and original["contains"] and "contains" not in enriched:
-            print("🚨 ERREUR DÉTECTÉE: L'IA a écrasé un système complet ! Restauration...")
-            print(f"   Original avait {len(original['contains'])} éléments")
-            print(f"   Enriched n'a pas de structure 'contains'")
-            
-            # Restaurer l'original et ne rien faire
+        # Si l'enriched est exactement identique à l'original, pas d'enrichissement
+        if enriched == original:
+            print("ℹ️ Aucun enrichissement détecté")
             return original
-        
-        # Cas 2: L'original avait des éléments mais l'enriched en a beaucoup moins
-        original_count = len(original.get("contains", []))
-        enriched_count = len(enriched.get("contains", []))
-        
-        # Si l'original avait des éléments et l'enriched en a très peu ou zéro
-        if original_count > 0 and enriched_count <= max(1, original_count // 3):
-            print(f"🚨 PROTECTION ANTI-ÉCRASEMENT ACTIVÉE !")
-            print(f"   Original: {original_count} éléments")
-            print(f"   Enriched: {enriched_count} éléments")
-            print(f"   🔄 Ajout intelligent des nouveaux éléments...")
             
-            # Restaurer la structure originale
-            merged_system = copy.deepcopy(original)
+        # Commencer avec l'original comme base
+        result = copy.deepcopy(original)
+        
+        def merge_new_elements(target_container, source_container, path=""):
+            """Merge récursif des éléments sans ID dans la bonne hiérarchie"""
             
-            # Ajouter les nouveaux éléments sans écraser
-            if "contains" in enriched and enriched["contains"]:
-                merged_system.setdefault("contains", [])
-                for new_element in enriched["contains"]:
-                    # Vérifier que l'élément n'existe pas déjà
-                    existing_names = [item.get("name", "") for item in merged_system["contains"]]
+            if not isinstance(source_container, dict) or "contains" not in source_container:
+                return
+                
+            for new_element in source_container.get("contains", []):
+                if not isinstance(new_element, dict):
+                    continue
+                    
+                # Si l'élément n'a pas d'ID, c'est un nouvel élément
+                if "id" not in new_element and "entity_id" not in new_element:
+                    # Vérifier qu'il n'existe pas déjà (par nom)
+                    existing_names = [item.get("name", "") for item in target_container.get("contains", [])]
+                    
                     if new_element.get("name", "") not in existing_names:
-                        merged_system["contains"].append(new_element)
-                        print(f"  ➕ Ajout sécurisé de : {new_element.get('name', 'Élément sans nom')}")
+                        target_container.setdefault("contains", [])
+                        target_container["contains"].append(new_element)
+                        print(f"  ➕ Nouvel élément ajouté{path}: {new_element.get('name', 'Sans nom')}")
+                    else:
+                        print(f"  ⚠️ Élément déjà existant ignoré{path}: {new_element.get('name', 'Sans nom')}")
+                        
+                # Si l'élément a un ID, chercher le même ID dans l'original pour merger récursivement
+                elif new_element.get("id") or new_element.get("entity_id"):
+                    element_id = new_element.get("id") or new_element.get("entity_id")
+                    
+                    # Chercher l'élément correspondant dans target_container
+                    for target_element in target_container.get("contains", []):
+                        if (target_element.get("id") == element_id or 
+                            target_element.get("entity_id") == element_id):
+                            # Merger récursivement dans cet élément
+                            merge_new_elements(target_element, new_element, f"{path}/{target_element.get('name', 'Sans nom')}")
+                            break
+        
+        # Commencer le merge depuis la racine
+        merge_new_elements(result, enriched)
+        
+        # Mettre à jour la description principale si elle a été enrichie
+        if (enriched.get("entry") and 
+            enriched.get("entry") != original.get("entry") and
+            len(enriched.get("entry", "")) > len(original.get("entry", "")) * 0.8):
+            result["entry"] = enriched["entry"]
+            print("  📝 Description principale mise à jour")
             
-            # Mettre à jour la description du système si elle a été enrichie et semble valide
-            if (enriched.get("entry") and 
-                len(enriched.get("entry", "")) > len(original.get("entry", "")) // 2):
-                merged_system["entry"] = enriched["entry"]
-                print("  📝 Description du système mise à jour")
-            
-            return merged_system
-        else:
-            # L'enrichissement semble correct, utiliser tel quel
-            print("✅ Enrichissement normal détecté")
-            return enriched
+        return result
     
     # Appliquer le smart merge
     enriched_system = smart_merge(original_system, enriched_system)
