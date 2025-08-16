@@ -1,0 +1,1554 @@
+{
+  "metadata": {
+    "description": "Réseau de transport FTL entre les systèmes stellaires",
+    "total_liaisons": 89,
+    "generated_at": "auto-generated from Kanka data",
+    "format": "graph_data"
+  },
+  "systems": {
+    "Lirael": {
+      "name": "Lirael",
+      "connections_count": 6
+    },
+    "Orindor": {
+      "name": "Orindor",
+      "connections_count": 2
+    },
+    "Syrtis": {
+      "name": "Syrtis",
+      "connections_count": 6
+    },
+    "Tyralus": {
+      "name": "Tyralus",
+      "connections_count": 7
+    },
+    "Ephyros": {
+      "name": "Ephyros",
+      "connections_count": 6
+    },
+    "Ithara": {
+      "name": "Ithara",
+      "connections_count": 6
+    },
+    "Zolara": {
+      "name": "Zolara",
+      "connections_count": 8
+    },
+    "Gamma": {
+      "name": "Gamma",
+      "connections_count": 6
+    },
+    "Malvora": {
+      "name": "Malvora",
+      "connections_count": 4
+    },
+    "Lybrata": {
+      "name": "Lybrata",
+      "connections_count": 10
+    },
+    "Ravenis": {
+      "name": "Ravenis",
+      "connections_count": 6
+    },
+    "Zarenth": {
+      "name": "Zarenth",
+      "connections_count": 4
+    },
+    "Clyra": {
+      "name": "Clyra",
+      "connections_count": 6
+    },
+    "Zelyn": {
+      "name": "Zelyn",
+      "connections_count": 8
+    },
+    "Aureon": {
+      "name": "Aureon",
+      "connections_count": 8
+    },
+    "Méridia": {
+      "name": "Méridia",
+      "connections_count": 8
+    },
+    "Trelis": {
+      "name": "Trelis",
+      "connections_count": 4
+    },
+    "Sol": {
+      "name": "Sol",
+      "connections_count": 10
+    },
+    "Zephyra": {
+      "name": "Zephyra",
+      "connections_count": 10
+    },
+    "Theryn": {
+      "name": "Theryn",
+      "connections_count": 8
+    },
+    "Ophyra": {
+      "name": "Ophyra",
+      "connections_count": 9
+    },
+    "Eneria": {
+      "name": "Eneria",
+      "connections_count": 4
+    },
+    "Tenebria": {
+      "name": "Tenebria",
+      "connections_count": 6
+    },
+    "Tyros": {
+      "name": "Tyros",
+      "connections_count": 2
+    },
+    "Kryos": {
+      "name": "Kryos",
+      "connections_count": 6
+    },
+    "Carnyx": {
+      "name": "Carnyx",
+      "connections_count": 4
+    },
+    "Alpha Centauri": {
+      "name": "Alpha Centauri",
+      "connections_count": 8
+    },
+    "Jorvan": {
+      "name": "Jorvan",
+      "connections_count": 6
+    }
+  },
+  "connections": [
+    {
+      "source": "Aureon",
+      "target": "Alpha Centauri",
+      "status": "FTL Privée",
+      "distance": 3,
+      "prive": true
+    },
+    {
+      "source": "Aureon",
+      "target": "Tenebria",
+      "status": "FTL Répertoriée",
+      "distance": 2
+    },
+    {
+      "source": "Aureon",
+      "target": "Sol",
+      "status": "FTL Répertoriée",
+      "distance": 3
+    },
+    {
+      "source": "Aureon",
+      "target": "Jorvan",
+      "status": "FTL Répertoriée",
+      "distance": 4
+    },
+    {
+      "source": "Zelyn",
+      "target": "Eneria",
+      "status": "FTL Répertoriée",
+      "distance": 13
+    },
+    {
+      "source": "Zelyn",
+      "target": "Lirael",
+      "status": "FTL Privée",
+      "distance": 8,
+      "prive": true
+    },
+    {
+      "source": "Zelyn",
+      "target": "Trelis",
+      "status": "FTL Privée",
+      "distance": 5,
+      "prive": true
+    },
+    {
+      "source": "Zelyn",
+      "target": "Ophyra",
+      "status": "FTL Répertoriée",
+      "distance": 9
+    },
+    {
+      "source": "Orindor",
+      "target": "Zolara",
+      "status": "FTL Privée",
+      "distance": 12,
+      "prive": true
+    },
+    {
+      "source": "Ophyra",
+      "target": "Jorvan",
+      "status": "FTL Répertoriée",
+      "distance": 7
+    },
+    {
+      "source": "Ophyra",
+      "target": "Lirael",
+      "status": "FTL Répertoriée",
+      "distance": 4
+    },
+    {
+      "source": "Ophyra",
+      "target": "Sol",
+      "status": "FTL Répertoriée",
+      "distance": 4
+    },
+    {
+      "source": "Ophyra",
+      "target": "Tyralus",
+      "status": "FTL Privée",
+      "distance": 6,
+      "prive": true
+    },
+    {
+      "source": "Ophyra",
+      "target": "Zelyn",
+      "status": "FTL Répertoriée",
+      "distance": 9
+    },
+    {
+      "source": "Kryos",
+      "target": "Clyra",
+      "status": "FTL Répertoriée",
+      "distance": 3
+    },
+    {
+      "source": "Kryos",
+      "target": "Ephyros",
+      "status": "FTL Répertoriée",
+      "distance": 10
+    },
+    {
+      "source": "Kryos",
+      "target": "Zephyra",
+      "status": "FTL Répertoriée",
+      "distance": 6
+    },
+    {
+      "source": "Tenebria",
+      "target": "Alpha Centauri",
+      "status": "FTL Répertoriée",
+      "distance": 2
+    },
+    {
+      "source": "Tenebria",
+      "target": "Aureon",
+      "status": "FTL Répertoriée",
+      "distance": 2
+    },
+    {
+      "source": "Tenebria",
+      "target": "Ephyros",
+      "status": "FTL Répertoriée",
+      "distance": 5
+    },
+    {
+      "source": "Carnyx",
+      "target": "Malvora",
+      "status": "FTL Pirate",
+      "distance": 3
+    },
+    {
+      "source": "Carnyx",
+      "target": "Lybrata",
+      "status": "FTL Pirate",
+      "distance": 6
+    },
+    {
+      "source": "Zephyra",
+      "target": "Alpha Centauri",
+      "status": "FTL Répertoriée",
+      "distance": 5
+    },
+    {
+      "source": "Zephyra",
+      "target": "Clyra",
+      "status": "FTL Privée",
+      "distance": 7,
+      "prive": true
+    },
+    {
+      "source": "Zephyra",
+      "target": "Kryos",
+      "status": "FTL Répertoriée",
+      "distance": 6
+    },
+    {
+      "source": "Zephyra",
+      "target": "Méridia",
+      "status": "FTL Répertoriée",
+      "distance": 3
+    },
+    {
+      "source": "Zephyra",
+      "target": "Sol",
+      "status": "FTL Répertoriée",
+      "distance": 6
+    },
+    {
+      "source": "Syrtis",
+      "target": "Gamma",
+      "status": "FTL Répertoriée",
+      "distance": 5
+    },
+    {
+      "source": "Syrtis",
+      "target": "Lybrata",
+      "status": "FTL Répertoriée",
+      "distance": 4
+    },
+    {
+      "source": "Syrtis",
+      "target": "Tyralus",
+      "status": "FTL Répertoriée",
+      "distance": 5
+    },
+    {
+      "source": "Eneria",
+      "target": "Zelyn",
+      "status": "FTL Répertoriée",
+      "distance": 12
+    },
+    {
+      "source": "Eneria",
+      "target": "Theryn",
+      "status": "FTL Privée",
+      "distance": 7,
+      "prive": true
+    },
+    {
+      "source": "Tyralus",
+      "target": "Lirael",
+      "status": "FTL Répertoriée",
+      "distance": 4
+    },
+    {
+      "source": "Tyralus",
+      "target": "Lybrata",
+      "status": "FTL Répertoriée",
+      "distance": 4
+    },
+    {
+      "source": "Tyralus",
+      "target": "Syrtis",
+      "status": "FTL Répertoriée",
+      "distance": 5
+    },
+    {
+      "source": "Trelis",
+      "target": "Jorvan",
+      "status": "FTL Répertoriée",
+      "distance": 3
+    },
+    {
+      "source": "Trelis",
+      "target": "Zelyn",
+      "status": "FTL Privée",
+      "distance": 5,
+      "prive": true
+    },
+    {
+      "source": "Alpha Centauri",
+      "target": "Sol",
+      "status": "FTL Répertoriée",
+      "distance": 3
+    },
+    {
+      "source": "Alpha Centauri",
+      "target": "Tenebria",
+      "status": "FTL Répertoriée",
+      "distance": 2
+    },
+    {
+      "source": "Alpha Centauri",
+      "target": "Zephyra",
+      "status": "FTL Répertoriée",
+      "distance": 5
+    },
+    {
+      "source": "Alpha Centauri",
+      "target": "Aureon",
+      "status": "FTL Privée",
+      "distance": 3,
+      "prive": true
+    },
+    {
+      "source": "Lybrata",
+      "target": "Tyralus",
+      "status": "FTL Répertoriée",
+      "distance": 4
+    },
+    {
+      "source": "Lybrata",
+      "target": "Syrtis",
+      "status": "FTL Répertoriée",
+      "distance": 4
+    },
+    {
+      "source": "Lybrata",
+      "target": "Ravenis",
+      "status": "FTL Pirate",
+      "distance": 8
+    },
+    {
+      "source": "Lybrata",
+      "target": "Malvora",
+      "status": "FTL Pirate",
+      "distance": 5
+    },
+    {
+      "source": "Lybrata",
+      "target": "Carnyx",
+      "status": "FTL Pirate",
+      "distance": 6
+    },
+    {
+      "source": "Ephyros",
+      "target": "Tenebria",
+      "status": "FTL Répertoriée",
+      "distance": 5
+    },
+    {
+      "source": "Ephyros",
+      "target": "Tyros",
+      "status": "FTL Répertoriée",
+      "distance": 14
+    },
+    {
+      "source": "Ephyros",
+      "target": "Kryos",
+      "status": "FTL Répertoriée",
+      "distance": 10
+    },
+    {
+      "source": "Gamma",
+      "target": "Ithara",
+      "status": "FTL Répertoriée",
+      "distance": 5
+    },
+    {
+      "source": "Gamma",
+      "target": "Syrtis",
+      "status": "FTL Répertoriée",
+      "distance": 5
+    },
+    {
+      "source": "Gamma",
+      "target": "Méridia",
+      "status": "FTL Répertoriée",
+      "distance": 6
+    },
+    {
+      "source": "Tyros",
+      "target": "Ephyros",
+      "status": "FTL Répertoriée",
+      "distance": 14
+    },
+    {
+      "source": "Clyra",
+      "target": "Kryos",
+      "status": "FTL Répertoriée",
+      "distance": 3
+    },
+    {
+      "source": "Clyra",
+      "target": "Zephyra",
+      "status": "FTL Privée",
+      "distance": 7,
+      "prive": true
+    },
+    {
+      "source": "Clyra",
+      "target": "Ithara",
+      "status": "FTL Répertoriée",
+      "distance": 6
+    },
+    {
+      "source": "Zarenth",
+      "target": "Zolara",
+      "status": "FTL Privée",
+      "distance": 5,
+      "prive": true
+    },
+    {
+      "source": "Zarenth",
+      "target": "Ravenis",
+      "status": "FTL Pirate",
+      "distance": 6
+    },
+    {
+      "source": "Ravenis",
+      "target": "Theryn",
+      "status": "FTL Privée",
+      "distance": 7,
+      "prive": true
+    },
+    {
+      "source": "Ravenis",
+      "target": "Lybrata",
+      "status": "FTL Pirate",
+      "distance": 8
+    },
+    {
+      "source": "Ravenis",
+      "target": "Zarenth",
+      "status": "FTL Pirate",
+      "distance": 6
+    },
+    {
+      "source": "Méridia",
+      "target": "Gamma",
+      "status": "FTL Répertoriée",
+      "distance": 6
+    },
+    {
+      "source": "Méridia",
+      "target": "Ithara",
+      "status": "FTL Répertoriée",
+      "distance": 4
+    },
+    {
+      "source": "Méridia",
+      "target": "Sol",
+      "status": "FTL Répertoriée",
+      "distance": 7
+    },
+    {
+      "source": "Méridia",
+      "target": "Zephyra",
+      "status": "FTL Répertoriée",
+      "distance": 3
+    },
+    {
+      "source": "Malvora",
+      "target": "Lybrata",
+      "status": "FTL Pirate",
+      "distance": 5
+    },
+    {
+      "source": "Malvora",
+      "target": "Carnyx",
+      "status": "FTL Pirate",
+      "distance": 3
+    },
+    {
+      "source": "Zolara",
+      "target": "Zarenth",
+      "status": "FTL Privée",
+      "distance": 5,
+      "prive": true
+    },
+    {
+      "source": "Zolara",
+      "target": "Theryn",
+      "status": "FTL Privée",
+      "distance": 11,
+      "prive": true
+    },
+    {
+      "source": "Zolara",
+      "target": "Orindor",
+      "status": "FTL Privée",
+      "distance": 12,
+      "prive": true
+    },
+    {
+      "source": "Zolara",
+      "target": "Theryn",
+      "status": "FTL Privée",
+      "distance": 7,
+      "prive": true
+    },
+    {
+      "source": "Lirael",
+      "target": "Ophyra",
+      "status": "FTL Répertoriée",
+      "distance": 4
+    },
+    {
+      "source": "Lirael",
+      "target": "Tyralus",
+      "status": "FTL Répertoriée",
+      "distance": 4
+    },
+    {
+      "source": "Lirael",
+      "target": "Zelyn",
+      "status": "FTL Privée",
+      "distance": 8,
+      "prive": true
+    },
+    {
+      "source": "Ithara",
+      "target": "Clyra",
+      "status": "FTL Répertoriée",
+      "distance": 6
+    },
+    {
+      "source": "Ithara",
+      "target": "Gamma",
+      "status": "FTL Répertoriée",
+      "distance": 5
+    },
+    {
+      "source": "Ithara",
+      "target": "Méridia",
+      "status": "FTL Répertoriée",
+      "distance": 4
+    },
+    {
+      "source": "Sol",
+      "target": "Alpha Centauri",
+      "status": "FTL Répertoriée",
+      "distance": 3
+    },
+    {
+      "source": "Sol",
+      "target": "Aureon",
+      "status": "FTL Répertoriée",
+      "distance": 3
+    },
+    {
+      "source": "Sol",
+      "target": "Méridia",
+      "status": "FTL Répertoriée",
+      "distance": 7
+    },
+    {
+      "source": "Sol",
+      "target": "Ophyra",
+      "status": "FTL Répertoriée",
+      "distance": 4
+    },
+    {
+      "source": "Sol",
+      "target": "Zephyra",
+      "status": "FTL Répertoriée",
+      "distance": 6
+    },
+    {
+      "source": "Theryn",
+      "target": "Eneria",
+      "status": "FTL Privée",
+      "distance": 7
+    },
+    {
+      "source": "Theryn",
+      "target": "Ravenis",
+      "status": "FTL Privée",
+      "distance": 7
+    },
+    {
+      "source": "Theryn",
+      "target": "Zolara",
+      "status": "FTL Privée",
+      "distance": 11,
+      "prive": true
+    },
+    {
+      "source": "Theryn",
+      "target": "Zolara",
+      "status": "FTL Privée",
+      "distance": 7,
+      "prive": true
+    },
+    {
+      "source": "Jorvan",
+      "target": "Aureon",
+      "status": "FTL Répertoriée",
+      "distance": 4
+    },
+    {
+      "source": "Jorvan",
+      "target": "Ophyra",
+      "status": "FTL Répertoriée",
+      "distance": 7
+    },
+    {
+      "source": "Jorvan",
+      "target": "Trelis",
+      "status": "FTL Répertoriée",
+      "distance": 3
+    }
+  ],
+  "graph": {
+    "nodes": [
+      {
+        "id": "Lirael",
+        "label": "Lirael",
+        "group": "system"
+      },
+      {
+        "id": "Orindor",
+        "label": "Orindor",
+        "group": "system"
+      },
+      {
+        "id": "Syrtis",
+        "label": "Syrtis",
+        "group": "system"
+      },
+      {
+        "id": "Tyralus",
+        "label": "Tyralus",
+        "group": "system"
+      },
+      {
+        "id": "Ephyros",
+        "label": "Ephyros",
+        "group": "system"
+      },
+      {
+        "id": "Ithara",
+        "label": "Ithara",
+        "group": "system"
+      },
+      {
+        "id": "Zolara",
+        "label": "Zolara",
+        "group": "system"
+      },
+      {
+        "id": "Gamma",
+        "label": "Gamma",
+        "group": "system"
+      },
+      {
+        "id": "Malvora",
+        "label": "Malvora",
+        "group": "system"
+      },
+      {
+        "id": "Lybrata",
+        "label": "Lybrata",
+        "group": "system"
+      },
+      {
+        "id": "Ravenis",
+        "label": "Ravenis",
+        "group": "system"
+      },
+      {
+        "id": "Zarenth",
+        "label": "Zarenth",
+        "group": "system"
+      },
+      {
+        "id": "Clyra",
+        "label": "Clyra",
+        "group": "system"
+      },
+      {
+        "id": "Zelyn",
+        "label": "Zelyn",
+        "group": "system"
+      },
+      {
+        "id": "Aureon",
+        "label": "Aureon",
+        "group": "system"
+      },
+      {
+        "id": "Méridia",
+        "label": "Méridia",
+        "group": "system"
+      },
+      {
+        "id": "Trelis",
+        "label": "Trelis",
+        "group": "system"
+      },
+      {
+        "id": "Sol",
+        "label": "Sol",
+        "group": "system"
+      },
+      {
+        "id": "Zephyra",
+        "label": "Zephyra",
+        "group": "system"
+      },
+      {
+        "id": "Theryn",
+        "label": "Theryn",
+        "group": "system"
+      },
+      {
+        "id": "Ophyra",
+        "label": "Ophyra",
+        "group": "system"
+      },
+      {
+        "id": "Eneria",
+        "label": "Eneria",
+        "group": "system"
+      },
+      {
+        "id": "Tenebria",
+        "label": "Tenebria",
+        "group": "system"
+      },
+      {
+        "id": "Tyros",
+        "label": "Tyros",
+        "group": "system"
+      },
+      {
+        "id": "Kryos",
+        "label": "Kryos",
+        "group": "system"
+      },
+      {
+        "id": "Carnyx",
+        "label": "Carnyx",
+        "group": "system"
+      },
+      {
+        "id": "Alpha Centauri",
+        "label": "Alpha Centauri",
+        "group": "system"
+      },
+      {
+        "id": "Jorvan",
+        "label": "Jorvan",
+        "group": "system"
+      }
+    ],
+    "edges": [
+      {
+        "id": "ftl_0",
+        "from": "Aureon",
+        "to": "Alpha Centauri",
+        "label": "FTL Privée",
+        "weight": 3,
+        "type": "ftl_connection",
+        "private": true
+      },
+      {
+        "id": "ftl_1",
+        "from": "Aureon",
+        "to": "Tenebria",
+        "label": "FTL Répertoriée",
+        "weight": 2,
+        "type": "ftl_connection"
+      },
+      {
+        "id": "ftl_2",
+        "from": "Aureon",
+        "to": "Sol",
+        "label": "FTL Répertoriée",
+        "weight": 3,
+        "type": "ftl_connection"
+      },
+      {
+        "id": "ftl_3",
+        "from": "Aureon",
+        "to": "Jorvan",
+        "label": "FTL Répertoriée",
+        "weight": 4,
+        "type": "ftl_connection"
+      },
+      {
+        "id": "ftl_4",
+        "from": "Zelyn",
+        "to": "Eneria",
+        "label": "FTL Répertoriée",
+        "weight": 13,
+        "type": "ftl_connection"
+      },
+      {
+        "id": "ftl_5",
+        "from": "Zelyn",
+        "to": "Lirael",
+        "label": "FTL Privée",
+        "weight": 8,
+        "type": "ftl_connection",
+        "private": true
+      },
+      {
+        "id": "ftl_6",
+        "from": "Zelyn",
+        "to": "Trelis",
+        "label": "FTL Privée",
+        "weight": 5,
+        "type": "ftl_connection",
+        "private": true
+      },
+      {
+        "id": "ftl_7",
+        "from": "Zelyn",
+        "to": "Ophyra",
+        "label": "FTL Répertoriée",
+        "weight": 9,
+        "type": "ftl_connection"
+      },
+      {
+        "id": "ftl_8",
+        "from": "Orindor",
+        "to": "Zolara",
+        "label": "FTL Privée",
+        "weight": 12,
+        "type": "ftl_connection",
+        "private": true
+      },
+      {
+        "id": "ftl_9",
+        "from": "Ophyra",
+        "to": "Jorvan",
+        "label": "FTL Répertoriée",
+        "weight": 7,
+        "type": "ftl_connection"
+      },
+      {
+        "id": "ftl_10",
+        "from": "Ophyra",
+        "to": "Lirael",
+        "label": "FTL Répertoriée",
+        "weight": 4,
+        "type": "ftl_connection"
+      },
+      {
+        "id": "ftl_11",
+        "from": "Ophyra",
+        "to": "Sol",
+        "label": "FTL Répertoriée",
+        "weight": 4,
+        "type": "ftl_connection"
+      },
+      {
+        "id": "ftl_12",
+        "from": "Ophyra",
+        "to": "Tyralus",
+        "label": "FTL Privée",
+        "weight": 6,
+        "type": "ftl_connection",
+        "private": true
+      },
+      {
+        "id": "ftl_13",
+        "from": "Ophyra",
+        "to": "Zelyn",
+        "label": "FTL Répertoriée",
+        "weight": 9,
+        "type": "ftl_connection"
+      },
+      {
+        "id": "ftl_14",
+        "from": "Kryos",
+        "to": "Clyra",
+        "label": "FTL Répertoriée",
+        "weight": 3,
+        "type": "ftl_connection"
+      },
+      {
+        "id": "ftl_15",
+        "from": "Kryos",
+        "to": "Ephyros",
+        "label": "FTL Répertoriée",
+        "weight": 10,
+        "type": "ftl_connection"
+      },
+      {
+        "id": "ftl_16",
+        "from": "Kryos",
+        "to": "Zephyra",
+        "label": "FTL Répertoriée",
+        "weight": 6,
+        "type": "ftl_connection"
+      },
+      {
+        "id": "ftl_17",
+        "from": "Tenebria",
+        "to": "Alpha Centauri",
+        "label": "FTL Répertoriée",
+        "weight": 2,
+        "type": "ftl_connection"
+      },
+      {
+        "id": "ftl_18",
+        "from": "Tenebria",
+        "to": "Aureon",
+        "label": "FTL Répertoriée",
+        "weight": 2,
+        "type": "ftl_connection"
+      },
+      {
+        "id": "ftl_19",
+        "from": "Tenebria",
+        "to": "Ephyros",
+        "label": "FTL Répertoriée",
+        "weight": 5,
+        "type": "ftl_connection"
+      },
+      {
+        "id": "ftl_20",
+        "from": "Carnyx",
+        "to": "Malvora",
+        "label": "FTL Pirate",
+        "weight": 3,
+        "type": "ftl_connection"
+      },
+      {
+        "id": "ftl_21",
+        "from": "Carnyx",
+        "to": "Lybrata",
+        "label": "FTL Pirate",
+        "weight": 6,
+        "type": "ftl_connection"
+      },
+      {
+        "id": "ftl_22",
+        "from": "Zephyra",
+        "to": "Alpha Centauri",
+        "label": "FTL Répertoriée",
+        "weight": 5,
+        "type": "ftl_connection"
+      },
+      {
+        "id": "ftl_23",
+        "from": "Zephyra",
+        "to": "Clyra",
+        "label": "FTL Privée",
+        "weight": 7,
+        "type": "ftl_connection",
+        "private": true
+      },
+      {
+        "id": "ftl_24",
+        "from": "Zephyra",
+        "to": "Kryos",
+        "label": "FTL Répertoriée",
+        "weight": 6,
+        "type": "ftl_connection"
+      },
+      {
+        "id": "ftl_25",
+        "from": "Zephyra",
+        "to": "Méridia",
+        "label": "FTL Répertoriée",
+        "weight": 3,
+        "type": "ftl_connection"
+      },
+      {
+        "id": "ftl_26",
+        "from": "Zephyra",
+        "to": "Sol",
+        "label": "FTL Répertoriée",
+        "weight": 6,
+        "type": "ftl_connection"
+      },
+      {
+        "id": "ftl_27",
+        "from": "Syrtis",
+        "to": "Gamma",
+        "label": "FTL Répertoriée",
+        "weight": 5,
+        "type": "ftl_connection"
+      },
+      {
+        "id": "ftl_28",
+        "from": "Syrtis",
+        "to": "Lybrata",
+        "label": "FTL Répertoriée",
+        "weight": 4,
+        "type": "ftl_connection"
+      },
+      {
+        "id": "ftl_29",
+        "from": "Syrtis",
+        "to": "Tyralus",
+        "label": "FTL Répertoriée",
+        "weight": 5,
+        "type": "ftl_connection"
+      },
+      {
+        "id": "ftl_30",
+        "from": "Eneria",
+        "to": "Zelyn",
+        "label": "FTL Répertoriée",
+        "weight": 12,
+        "type": "ftl_connection"
+      },
+      {
+        "id": "ftl_31",
+        "from": "Eneria",
+        "to": "Theryn",
+        "label": "FTL Privée",
+        "weight": 7,
+        "type": "ftl_connection",
+        "private": true
+      },
+      {
+        "id": "ftl_32",
+        "from": "Tyralus",
+        "to": "Lirael",
+        "label": "FTL Répertoriée",
+        "weight": 4,
+        "type": "ftl_connection"
+      },
+      {
+        "id": "ftl_33",
+        "from": "Tyralus",
+        "to": "Lybrata",
+        "label": "FTL Répertoriée",
+        "weight": 4,
+        "type": "ftl_connection"
+      },
+      {
+        "id": "ftl_34",
+        "from": "Tyralus",
+        "to": "Syrtis",
+        "label": "FTL Répertoriée",
+        "weight": 5,
+        "type": "ftl_connection"
+      },
+      {
+        "id": "ftl_35",
+        "from": "Trelis",
+        "to": "Jorvan",
+        "label": "FTL Répertoriée",
+        "weight": 3,
+        "type": "ftl_connection"
+      },
+      {
+        "id": "ftl_36",
+        "from": "Trelis",
+        "to": "Zelyn",
+        "label": "FTL Privée",
+        "weight": 5,
+        "type": "ftl_connection",
+        "private": true
+      },
+      {
+        "id": "ftl_37",
+        "from": "Alpha Centauri",
+        "to": "Sol",
+        "label": "FTL Répertoriée",
+        "weight": 3,
+        "type": "ftl_connection"
+      },
+      {
+        "id": "ftl_38",
+        "from": "Alpha Centauri",
+        "to": "Tenebria",
+        "label": "FTL Répertoriée",
+        "weight": 2,
+        "type": "ftl_connection"
+      },
+      {
+        "id": "ftl_39",
+        "from": "Alpha Centauri",
+        "to": "Zephyra",
+        "label": "FTL Répertoriée",
+        "weight": 5,
+        "type": "ftl_connection"
+      },
+      {
+        "id": "ftl_40",
+        "from": "Alpha Centauri",
+        "to": "Aureon",
+        "label": "FTL Privée",
+        "weight": 3,
+        "type": "ftl_connection",
+        "private": true
+      },
+      {
+        "id": "ftl_41",
+        "from": "Lybrata",
+        "to": "Tyralus",
+        "label": "FTL Répertoriée",
+        "weight": 4,
+        "type": "ftl_connection"
+      },
+      {
+        "id": "ftl_42",
+        "from": "Lybrata",
+        "to": "Syrtis",
+        "label": "FTL Répertoriée",
+        "weight": 4,
+        "type": "ftl_connection"
+      },
+      {
+        "id": "ftl_43",
+        "from": "Lybrata",
+        "to": "Ravenis",
+        "label": "FTL Pirate",
+        "weight": 8,
+        "type": "ftl_connection"
+      },
+      {
+        "id": "ftl_44",
+        "from": "Lybrata",
+        "to": "Malvora",
+        "label": "FTL Pirate",
+        "weight": 5,
+        "type": "ftl_connection"
+      },
+      {
+        "id": "ftl_45",
+        "from": "Lybrata",
+        "to": "Carnyx",
+        "label": "FTL Pirate",
+        "weight": 6,
+        "type": "ftl_connection"
+      },
+      {
+        "id": "ftl_46",
+        "from": "Ephyros",
+        "to": "Tenebria",
+        "label": "FTL Répertoriée",
+        "weight": 5,
+        "type": "ftl_connection"
+      },
+      {
+        "id": "ftl_47",
+        "from": "Ephyros",
+        "to": "Tyros",
+        "label": "FTL Répertoriée",
+        "weight": 14,
+        "type": "ftl_connection"
+      },
+      {
+        "id": "ftl_48",
+        "from": "Ephyros",
+        "to": "Kryos",
+        "label": "FTL Répertoriée",
+        "weight": 10,
+        "type": "ftl_connection"
+      },
+      {
+        "id": "ftl_49",
+        "from": "Gamma",
+        "to": "Ithara",
+        "label": "FTL Répertoriée",
+        "weight": 5,
+        "type": "ftl_connection"
+      },
+      {
+        "id": "ftl_50",
+        "from": "Gamma",
+        "to": "Syrtis",
+        "label": "FTL Répertoriée",
+        "weight": 5,
+        "type": "ftl_connection"
+      },
+      {
+        "id": "ftl_51",
+        "from": "Gamma",
+        "to": "Méridia",
+        "label": "FTL Répertoriée",
+        "weight": 6,
+        "type": "ftl_connection"
+      },
+      {
+        "id": "ftl_52",
+        "from": "Tyros",
+        "to": "Ephyros",
+        "label": "FTL Répertoriée",
+        "weight": 14,
+        "type": "ftl_connection"
+      },
+      {
+        "id": "ftl_53",
+        "from": "Clyra",
+        "to": "Kryos",
+        "label": "FTL Répertoriée",
+        "weight": 3,
+        "type": "ftl_connection"
+      },
+      {
+        "id": "ftl_54",
+        "from": "Clyra",
+        "to": "Zephyra",
+        "label": "FTL Privée",
+        "weight": 7,
+        "type": "ftl_connection",
+        "private": true
+      },
+      {
+        "id": "ftl_55",
+        "from": "Clyra",
+        "to": "Ithara",
+        "label": "FTL Répertoriée",
+        "weight": 6,
+        "type": "ftl_connection"
+      },
+      {
+        "id": "ftl_56",
+        "from": "Zarenth",
+        "to": "Zolara",
+        "label": "FTL Privée",
+        "weight": 5,
+        "type": "ftl_connection",
+        "private": true
+      },
+      {
+        "id": "ftl_57",
+        "from": "Zarenth",
+        "to": "Ravenis",
+        "label": "FTL Pirate",
+        "weight": 6,
+        "type": "ftl_connection"
+      },
+      {
+        "id": "ftl_58",
+        "from": "Ravenis",
+        "to": "Theryn",
+        "label": "FTL Privée",
+        "weight": 7,
+        "type": "ftl_connection",
+        "private": true
+      },
+      {
+        "id": "ftl_59",
+        "from": "Ravenis",
+        "to": "Lybrata",
+        "label": "FTL Pirate",
+        "weight": 8,
+        "type": "ftl_connection"
+      },
+      {
+        "id": "ftl_60",
+        "from": "Ravenis",
+        "to": "Zarenth",
+        "label": "FTL Pirate",
+        "weight": 6,
+        "type": "ftl_connection"
+      },
+      {
+        "id": "ftl_61",
+        "from": "Méridia",
+        "to": "Gamma",
+        "label": "FTL Répertoriée",
+        "weight": 6,
+        "type": "ftl_connection"
+      },
+      {
+        "id": "ftl_62",
+        "from": "Méridia",
+        "to": "Ithara",
+        "label": "FTL Répertoriée",
+        "weight": 4,
+        "type": "ftl_connection"
+      },
+      {
+        "id": "ftl_63",
+        "from": "Méridia",
+        "to": "Sol",
+        "label": "FTL Répertoriée",
+        "weight": 7,
+        "type": "ftl_connection"
+      },
+      {
+        "id": "ftl_64",
+        "from": "Méridia",
+        "to": "Zephyra",
+        "label": "FTL Répertoriée",
+        "weight": 3,
+        "type": "ftl_connection"
+      },
+      {
+        "id": "ftl_65",
+        "from": "Malvora",
+        "to": "Lybrata",
+        "label": "FTL Pirate",
+        "weight": 5,
+        "type": "ftl_connection"
+      },
+      {
+        "id": "ftl_66",
+        "from": "Malvora",
+        "to": "Carnyx",
+        "label": "FTL Pirate",
+        "weight": 3,
+        "type": "ftl_connection"
+      },
+      {
+        "id": "ftl_67",
+        "from": "Zolara",
+        "to": "Zarenth",
+        "label": "FTL Privée",
+        "weight": 5,
+        "type": "ftl_connection",
+        "private": true
+      },
+      {
+        "id": "ftl_68",
+        "from": "Zolara",
+        "to": "Theryn",
+        "label": "FTL Privée",
+        "weight": 11,
+        "type": "ftl_connection",
+        "private": true
+      },
+      {
+        "id": "ftl_69",
+        "from": "Zolara",
+        "to": "Orindor",
+        "label": "FTL Privée",
+        "weight": 12,
+        "type": "ftl_connection",
+        "private": true
+      },
+      {
+        "id": "ftl_70",
+        "from": "Zolara",
+        "to": "Theryn",
+        "label": "FTL Privée",
+        "weight": 7,
+        "type": "ftl_connection",
+        "private": true
+      },
+      {
+        "id": "ftl_71",
+        "from": "Lirael",
+        "to": "Ophyra",
+        "label": "FTL Répertoriée",
+        "weight": 4,
+        "type": "ftl_connection"
+      },
+      {
+        "id": "ftl_72",
+        "from": "Lirael",
+        "to": "Tyralus",
+        "label": "FTL Répertoriée",
+        "weight": 4,
+        "type": "ftl_connection"
+      },
+      {
+        "id": "ftl_73",
+        "from": "Lirael",
+        "to": "Zelyn",
+        "label": "FTL Privée",
+        "weight": 8,
+        "type": "ftl_connection",
+        "private": true
+      },
+      {
+        "id": "ftl_74",
+        "from": "Ithara",
+        "to": "Clyra",
+        "label": "FTL Répertoriée",
+        "weight": 6,
+        "type": "ftl_connection"
+      },
+      {
+        "id": "ftl_75",
+        "from": "Ithara",
+        "to": "Gamma",
+        "label": "FTL Répertoriée",
+        "weight": 5,
+        "type": "ftl_connection"
+      },
+      {
+        "id": "ftl_76",
+        "from": "Ithara",
+        "to": "Méridia",
+        "label": "FTL Répertoriée",
+        "weight": 4,
+        "type": "ftl_connection"
+      },
+      {
+        "id": "ftl_77",
+        "from": "Sol",
+        "to": "Alpha Centauri",
+        "label": "FTL Répertoriée",
+        "weight": 3,
+        "type": "ftl_connection"
+      },
+      {
+        "id": "ftl_78",
+        "from": "Sol",
+        "to": "Aureon",
+        "label": "FTL Répertoriée",
+        "weight": 3,
+        "type": "ftl_connection"
+      },
+      {
+        "id": "ftl_79",
+        "from": "Sol",
+        "to": "Méridia",
+        "label": "FTL Répertoriée",
+        "weight": 7,
+        "type": "ftl_connection"
+      },
+      {
+        "id": "ftl_80",
+        "from": "Sol",
+        "to": "Ophyra",
+        "label": "FTL Répertoriée",
+        "weight": 4,
+        "type": "ftl_connection"
+      },
+      {
+        "id": "ftl_81",
+        "from": "Sol",
+        "to": "Zephyra",
+        "label": "FTL Répertoriée",
+        "weight": 6,
+        "type": "ftl_connection"
+      },
+      {
+        "id": "ftl_82",
+        "from": "Theryn",
+        "to": "Eneria",
+        "label": "FTL Privée",
+        "weight": 7,
+        "type": "ftl_connection"
+      },
+      {
+        "id": "ftl_83",
+        "from": "Theryn",
+        "to": "Ravenis",
+        "label": "FTL Privée",
+        "weight": 7,
+        "type": "ftl_connection"
+      },
+      {
+        "id": "ftl_84",
+        "from": "Theryn",
+        "to": "Zolara",
+        "label": "FTL Privée",
+        "weight": 11,
+        "type": "ftl_connection",
+        "private": true
+      },
+      {
+        "id": "ftl_85",
+        "from": "Theryn",
+        "to": "Zolara",
+        "label": "FTL Privée",
+        "weight": 7,
+        "type": "ftl_connection",
+        "private": true
+      },
+      {
+        "id": "ftl_86",
+        "from": "Jorvan",
+        "to": "Aureon",
+        "label": "FTL Répertoriée",
+        "weight": 4,
+        "type": "ftl_connection"
+      },
+      {
+        "id": "ftl_87",
+        "from": "Jorvan",
+        "to": "Ophyra",
+        "label": "FTL Répertoriée",
+        "weight": 7,
+        "type": "ftl_connection"
+      },
+      {
+        "id": "ftl_88",
+        "from": "Jorvan",
+        "to": "Trelis",
+        "label": "FTL Répertoriée",
+        "weight": 3,
+        "type": "ftl_connection"
+      }
+    ]
+  }
+}
