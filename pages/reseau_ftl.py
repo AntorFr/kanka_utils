@@ -7,9 +7,6 @@ import streamlit as st
 import json
 import os
 from streamlit_agraph import agraph, Node, Edge, Config
-import plotly.graph_objects as go
-import plotly.express as px
-import networkx as nx
 from typing import Dict, List, Tuple
 
 def load_ftl_data():
@@ -27,7 +24,7 @@ def load_ftl_data():
         st.error(f"❌ Erreur lors du chargement des données FTL: {e}")
         return None
 
-def create_network_graph(data: Dict, show_private: bool = True, max_distance: int = None) -> Tuple[List[Node], List[Edge]]:
+def create_network_graph(data: Dict, show_private: bool = True, max_distance: int = None, node_size: int = 15) -> Tuple[List[Node], List[Edge]]:
     """
     Crée les nœuds et arêtes pour le graphique de réseau
     
@@ -44,15 +41,16 @@ def create_network_graph(data: Dict, show_private: bool = True, max_distance: in
     # Créer les nœuds (systèmes)
     systems = data.get('systems', {})
     for system_name, system_data in systems.items():
-        # Taille du nœud proportionnelle au nombre de connexions
-        size = min(30 + system_data.get('connections_count', 0) * 3, 60)
+        # Taille du nœud avec facteur de connexions mais contrôlée par le slider
+        connections_count = system_data.get('connections_count', 0)
+        size = node_size + (connections_count * 2)  # Taille de base + bonus pour connexions
         
         node = Node(
             id=system_name,
             label=system_name,
             size=size,
             color="#4A90E2",  # Bleu pour tous les systèmes
-            font={"size": 14, "color": "#FFFFFF"},
+            font={"size": max(8, node_size // 2), "color": "#FFFFFF"},
             shape="dot"
         )
         nodes.append(node)
@@ -82,9 +80,10 @@ def create_network_graph(data: Dict, show_private: bool = True, max_distance: in
             width = 3
             dashes = False
         
-        # Largeur proportionnelle à la distance (inversée)
+        # Largeur et longueur proportionnelles à la distance
         distance = conn.get('distance', 5)
-        width = max(1, 6 - distance)
+        width = max(1, 6 - distance)  # Largeur inversement proportionnelle
+        length = distance * 20  # Longueur proportionnelle à la distance
         
         edge = Edge(
             source=conn['source'],
@@ -93,158 +92,13 @@ def create_network_graph(data: Dict, show_private: bool = True, max_distance: in
             width=width,
             dashes=dashes,
             label=f"Distance: {distance}",
-            font={"size": 10}
+            font={"size": 10},
+            length=length  # Contrôle la longueur visuelle de l'arête
         )
         edges.append(edge)
         edge_id += 1
     
     return nodes, edges
-
-def create_plotly_network(data: Dict, show_private: bool = True, layout_type: str = "spring", max_distance: int = None):
-    """
-    Crée un graphique réseau avec Plotly
-    """
-    # Créer un graphe NetworkX
-    G = nx.Graph()
-    
-    # Ajouter les nœuds
-    systems = data.get('systems', {})
-    for system_name, system_data in systems.items():
-        G.add_node(system_name, connections=system_data.get('connections_count', 0))
-    
-    # Ajouter les arêtes avec filtrage
-    connections = data.get('connections', [])
-    public_edges = []
-    private_edges = []
-    
-    for conn in connections:
-        is_private = conn.get('prive', False) or conn.get('status', '').lower().find('privée') >= 0
-        if is_private and not show_private:
-            continue
-        
-        # Filtrer par distance si spécifié
-        distance = conn.get('distance', 5)
-        if max_distance and distance > max_distance:
-            continue
-            
-        G.add_edge(conn['source'], conn['target'], 
-                  distance=distance,
-                  private=is_private)
-        
-        if is_private:
-            private_edges.append((conn['source'], conn['target']))
-        else:
-            public_edges.append((conn['source'], conn['target']))
-    
-    # Calculer les positions avec différents layouts
-    if layout_type == "spring (Force-directed)":
-        pos = nx.spring_layout(G, k=3, iterations=50)
-    elif layout_type == "circular":
-        pos = nx.circular_layout(G)
-    elif layout_type == "kamada_kawai":
-        pos = nx.kamada_kawai_layout(G)
-    elif layout_type == "random":
-        pos = nx.random_layout(G)
-    else:
-        pos = nx.spring_layout(G, k=3, iterations=50)
-    
-    # Préparer les données pour Plotly
-    edge_x_public = []
-    edge_y_public = []
-    edge_x_private = []
-    edge_y_private = []
-    
-    # Arêtes publiques
-    for edge in public_edges:
-        x0, y0 = pos[edge[0]]
-        x1, y1 = pos[edge[1]]
-        edge_x_public.extend([x0, x1, None])
-        edge_y_public.extend([y0, y1, None])
-    
-    # Arêtes privées
-    for edge in private_edges:
-        x0, y0 = pos[edge[0]]
-        x1, y1 = pos[edge[1]]
-        edge_x_private.extend([x0, x1, None])
-        edge_y_private.extend([y0, y1, None])
-    
-    # Nœuds
-    node_x = []
-    node_y = []
-    node_text = []
-    node_size = []
-    
-    for node in G.nodes():
-        x, y = pos[node]
-        node_x.append(x)
-        node_y.append(y)
-        connections = G.nodes[node].get('connections', 0)
-        node_text.append(f"{node}<br>Connexions: {connections}")
-        node_size.append(max(20, connections * 4))
-    
-    # Créer le graphique
-    fig = go.Figure()
-    
-    # Ajouter les arêtes publiques
-    if edge_x_public:
-        fig.add_trace(go.Scatter(
-            x=edge_x_public, y=edge_y_public,
-            mode='lines',
-            line=dict(width=2, color='#51CF66'),
-            hoverinfo='none',
-            showlegend=True,
-            name="Liens répertoriés"
-        ))
-    
-    # Ajouter les arêtes privées
-    if edge_x_private:
-        fig.add_trace(go.Scatter(
-            x=edge_x_private, y=edge_y_private,
-            mode='lines',
-            line=dict(width=2, color='#FF6B6B', dash='dash'),
-            hoverinfo='none',
-            showlegend=True,
-            name="Liens privés"
-        ))
-    
-    # Ajouter les nœuds
-    fig.add_trace(go.Scatter(
-        x=node_x, y=node_y,
-        mode='markers+text',
-        marker=dict(
-            size=node_size,
-            color='#4A90E2',
-            line=dict(width=2, color='white')
-        ),
-        text=[node for node in G.nodes()],
-        textposition="middle center",
-        textfont=dict(color="white", size=10),
-        hoverinfo='text',
-        hovertext=node_text,
-        showlegend=True,
-        name="Systèmes stellaires"
-    ))
-    
-    fig.update_layout(
-        title="Réseau FTL - Univers d'Eneria",
-        showlegend=True,
-        hovermode='closest',
-        margin=dict(b=20,l=5,r=5,t=40),
-        annotations=[ dict(
-            text="Réseau de transport FTL entre les systèmes stellaires",
-            showarrow=False,
-            xref="paper", yref="paper",
-            x=0.005, y=-0.002,
-            xanchor='left', yanchor='bottom',
-            font=dict(color="#888", size=12)
-        )],
-        xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
-        yaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
-        plot_bgcolor='rgba(0,0,0,0)',
-        paper_bgcolor='rgba(0,0,0,0)'
-    )
-    
-    return fig
 
 def show_network_stats(data: Dict, show_private: bool = True, max_distance: int = None):
     """Affiche les statistiques du réseau"""
@@ -328,20 +182,14 @@ def main():
         help="Les liens privés sont représentés en rouge et en pointillés"
     )
     
-    # Type de visualisation
-    viz_type = st.sidebar.selectbox(
-        "📊 Type de visualisation",
-        ["Plotly (Recommandé)", "Agraph (Interactif)"],
-        help="Plotly offre de meilleures performances pour les gros réseaux"
+    # Contrôle de la taille des nœuds
+    node_size = st.sidebar.slider(
+        "� Taille des systèmes",
+        min_value=5,
+        max_value=50,
+        value=15,
+        help="Ajuster la taille des nœuds représentant les systèmes stellaires"
     )
-    
-    # Options de layout
-    if viz_type == "Plotly (Recommandé)":
-        layout_type = st.sidebar.selectbox(
-            "🎯 Layout du graphique",
-            ["spring (Force-directed)", "circular", "kamada_kawai", "random"],
-            help="Différents algorithmes de positionnement des nœuds"
-        )
     
     # Filtre par distance
     if data and data.get('connections'):
@@ -371,61 +219,81 @@ def main():
     with col1:
         st.markdown("**🎨 Légende:**")
         st.markdown("🔵 **Systèmes stellaires** - Taille proportionnelle aux connexions")
+        st.markdown("📏 **Longueur des liens** - Proportionnelle à la distance FTL")
     with col2:
         st.markdown("🟢 **Liens répertoriés** - Connexions publiques connues")
         if show_private:
             st.markdown("🔴 **Liens privés** - Connexions secrètes ou non officielles")
+        st.markdown("🎯 **Largeur des liens** - Inversement proportionnelle à la distance")
     
     # Affichage du graphique
-    st.subheader("🗺️ Carte du réseau")
+    st.subheader("🗺️ Carte du réseau FTL")
     
-    if viz_type == "Plotly (Recommandé)":
-        # Graphique Plotly
-        if 'distance_filter' in locals():
-            fig = create_plotly_network(data, show_private, layout_type, distance_filter)
-        else:
-            fig = create_plotly_network(data, show_private, layout_type)
-        st.plotly_chart(fig, use_container_width=True, height=600)
-        
+    # Graphique Agraph interactif
+    if 'distance_filter' in locals():
+        nodes, edges = create_network_graph(data, show_private, distance_filter, node_size)
     else:
-        # Graphique Agraph (plus interactif mais plus lourd)
-        if 'distance_filter' in locals():
-            nodes, edges = create_network_graph(data, show_private, distance_filter)
-        else:
-            nodes, edges = create_network_graph(data, show_private)
-        
-        config = Config(
-            width=800,
-            height=600,
-            directed=False,
-            physics=True,
-            hierarchical=False,
-            nodeHighlightBehavior=True,
-            highlightColor="#F7A7A6",
-            collapsible=False
-        )
-        
-        if nodes and edges:
-            agraph(nodes=nodes, edges=edges, config=config)
-        else:
-            st.warning("⚠️ Aucune donnée à afficher avec les paramètres actuels")
+        nodes, edges = create_network_graph(data, show_private, None, node_size)
+    
+    config = Config(
+        width=1000,
+        height=700,
+        directed=False,
+        physics=True,
+        hierarchical=False,
+        nodeHighlightBehavior=True,
+        highlightColor="#F7A7A6",
+        collapsible=False,
+        # Configuration de physique pour respecter les distances
+        physics_config={
+            "enabled": True,
+            "barnesHut": {
+                "gravitationalConstant": -8000,
+                "centralGravity": 0.3,
+                "springLength": 95,
+                "springConstant": 0.04,
+                "damping": 0.09
+            },
+            "maxVelocity": 50,
+            "minVelocity": 0.1,
+            "solver": "barnesHut",
+            "stabilization": {"iterations": 150}
+        }
+    )
+    
+    if nodes and edges:
+        agraph(nodes=nodes, edges=edges, config=config)
+    else:
+        st.warning("⚠️ Aucune donnée à afficher avec les paramètres actuels")
     
     # Informations techniques
     with st.expander("ℹ️ Informations techniques"):
         st.markdown(f"""
         **Source des données:** `univers_eneria_reseau_ftl.json`
         
-        **Algorithme de positionnement:** Spring Layout (Force-directed)
+        **Moteur de rendu:** Streamlit-Agraph (interactif)
         
         **Couleurs:**
         - 🔵 Systèmes: Bleu (#4A90E2)
         - 🟢 Liens répertoriés: Vert (#51CF66) 
         - 🔴 Liens privés: Rouge (#FF6B6B)
         
-        **Taille des nœuds:** Proportionnelle au nombre de connexions (20-60px)
+        **Proportionnalité:**
+        - **Taille des nœuds:** Base réglable + bonus connexions (×2)
+        - **Longueur des arêtes:** Distance FTL (×20 pour physique)
+        - **Largeur des arêtes:** Inversement proportionnelle à la distance (6-distance)
         
-        **Largeur des arêtes:** Inversement proportionnelle à la distance FTL
+        **Physique:** BarnesHut avec springs ajustés pour respecter les distances FTL
         """)
+        
+        st.markdown("**Contrôles:**")
+        st.markdown("- 🖱️ **Drag:** Déplacer les nœuds")
+        st.markdown("- 🔍 **Zoom:** Molette de la souris")
+        st.markdown("- 📏 **Taille:** Slider dans la barre latérale")
+        st.markdown("- 🔒 **Liens privés:** Toggle dans la barre latérale")
+        
+        if 'distance_filter' in locals():
+            st.markdown(f"**Filtre actuel:** Distance FTL ≤ {distance_filter} UA")
 
 if __name__ == "__main__":
     main()
