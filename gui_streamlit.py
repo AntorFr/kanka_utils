@@ -270,9 +270,7 @@ def main():
     elif page == "🌌 Réseau FTL":
         # Importer et exécuter la page du réseau FTL
         try:
-            import sys
-            sys.path.append(os.path.join(os.path.dirname(__file__), 'pages'))
-            from reseau_ftl import main as ftl_main
+            from pages.reseau_ftl import main as ftl_main  # type: ignore
             ftl_main()
         except ImportError as e:
             st.error(f"❌ Erreur d'import de la page Réseau FTL: {e}")
