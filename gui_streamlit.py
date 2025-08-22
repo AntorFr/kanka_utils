@@ -3,6 +3,7 @@ import os
 import json
 import traceback
 from typing import Optional, List
+from pathlib import Path
 
 # Import des fonctions du main
 from main import (
@@ -12,6 +13,9 @@ from main import (
     generate_system_synthesis
 )
 from kanka_agent.config import GENERATED_SYSTEM_DIR
+
+# Import des fonctions de compression d'images
+from kanka_image import smart_compress_folder
 
 # Configuration de la page
 st.set_page_config(
@@ -86,7 +90,8 @@ def main():
             "🏠 Accueil",
             "📚 Base de connaissance", 
             "🌌 Réseau FTL",
-            "🚀 Génération",
+            "🖼 Compression Images",
+            "�🚀 Génération",
             "📥 Import/Export",
             "✨ Enrichissement",
             "🔗 Synthèse"
@@ -278,6 +283,301 @@ def main():
         except Exception as e:
             st.error(f"❌ Erreur lors de l'affichage du réseau FTL: {e}")
             st.exception(e)
+    
+    # Page Compression Images
+    elif page == "🖼 Compression Images":
+        st.markdown('<h2 class="section-header">🖼 Compression intelligente d\'images</h2>', unsafe_allow_html=True)
+        
+        st.markdown("""
+        **Compressez automatiquement vos images PNG** pour réduire leur taille tout en conservant une qualité optimale.
+        
+        - ✅ **Intelligent** : Ne retraite pas les images déjà compressées
+        - ✅ **Sûr** : Préserve vos fichiers originaux  
+        - ✅ **Automatique** : Ajoute `@0.5x` au nom des fichiers compressés
+        """)
+        
+        # Interface de sélection du dossier
+        col1, col2 = st.columns([2, 1])
+        
+        with col1:
+            st.markdown("### 📁 Sélection du dossier")
+            
+            # Zone de saisie pour le chemin
+            folder_path = st.text_input(
+                "Chemin vers le dossier d'images",
+                placeholder="/Users/berard/Pictures/mes_images",
+                help="Entrez le chemin complet vers le dossier contenant vos images PNG"
+            )
+            
+            # Navigation par dossiers
+            st.markdown("**Navigation rapide :**")
+            
+            # Dossiers communs en colonnes
+            col_nav1, col_nav2, col_nav3 = st.columns(3)
+            
+            with col_nav1:
+                if st.button("🏠 Accueil", use_container_width=True):
+                    folder_path = str(Path.home())
+                    st.rerun()
+                
+                if st.button("🖼️ Images", use_container_width=True):
+                    folder_path = str(Path.home() / "Pictures")
+                    st.rerun()
+            
+            with col_nav2:
+                if st.button("🖥️ Bureau", use_container_width=True):
+                    folder_path = str(Path.home() / "Desktop")
+                    st.rerun()
+                
+                if st.button("📁 Documents", use_container_width=True):
+                    folder_path = str(Path.home() / "Documents")
+                    st.rerun()
+            
+            with col_nav3:
+                if st.button("📥 Téléchargements", use_container_width=True):
+                    folder_path = str(Path.home() / "Downloads")
+                    st.rerun()
+                
+                if st.button("💿 Applications", use_container_width=True):
+                    folder_path = "/Applications"
+                    st.rerun()
+            
+            # Navigation dans le dossier actuel
+            if folder_path and Path(folder_path).exists() and Path(folder_path).is_dir():
+                current_path = Path(folder_path)
+                
+                # Bouton pour remonter au parent
+                if current_path.parent != current_path:  # Pas à la racine
+                    if st.button(f"⬆️ Dossier parent: {current_path.parent.name}", use_container_width=True):
+                        folder_path = str(current_path.parent)
+                        st.rerun()
+                
+                # Afficher les sous-dossiers
+                try:
+                    subdirs = [d for d in current_path.iterdir() if d.is_dir() and not d.name.startswith('.')]
+                    if subdirs:
+                        st.markdown("**Sous-dossiers disponibles :**")
+                        
+                        # Limiter l'affichage pour ne pas surcharger l'interface
+                        max_display = 8
+                        cols_per_row = 2
+                        
+                        for i in range(0, min(len(subdirs), max_display), cols_per_row):
+                            cols = st.columns(cols_per_row)
+                            for j, col in enumerate(cols):
+                                if i + j < len(subdirs) and i + j < max_display:
+                                    subdir = subdirs[i + j]
+                                    with col:
+                                        if st.button(f"� {subdir.name}", use_container_width=True, key=f"subdir_{i+j}"):
+                                            folder_path = str(subdir)
+                                            st.rerun()
+                        
+                        if len(subdirs) > max_display:
+                            st.info(f"... et {len(subdirs) - max_display} autres dossiers")
+                except PermissionError:
+                    st.warning("⚠️ Accès refusé à ce dossier")
+                except Exception as e:
+                    st.warning(f"⚠️ Erreur lors de la lecture du dossier: {str(e)}")
+            
+            # Chemin rapide par saisie directe
+            with st.expander("✏️ Chemins personnalisés"):
+                st.markdown("**Dossiers fréquemment utilisés :**")
+                
+                common_paths = [
+                    ("🎮 Dossier Jeux", "/Users/berard/Documents/Jeux"),
+                    ("🛠️ Dossier Outils", "/Users/berard/Documents/Outils"),
+                    ("📷 Photos", "/Users/berard/Pictures/Photos"),
+                    ("🎨 Illustrations", "/Users/berard/Pictures/Illustrations"),
+                ]
+                
+                for name, path in common_paths:
+                    if Path(path).exists():
+                        if st.button(name, use_container_width=True, key=f"custom_{path}"):
+                            folder_path = path
+                            st.rerun()
+                
+                # Saisie manuelle avancée
+                custom_path = st.text_input(
+                    "Ou saisissez un chemin personnalisé:",
+                    placeholder="/Volumes/MonDisque/MesImages",
+                    key="custom_path_input"
+                )
+                if custom_path and st.button("➡️ Aller à ce dossier"):
+                    folder_path = custom_path
+                    st.rerun()
+        
+        with col2:
+            st.markdown("### ⚙️ Paramètres")
+            
+            scale_factor = st.slider(
+                "Facteur de redimensionnement",
+                min_value=0.1,
+                max_value=1.0,
+                value=0.5,
+                step=0.1,
+                help="0.5 = 50% de la taille originale"
+            )
+            
+            palette_size = st.selectbox(
+                "Nombre de couleurs max",
+                [256, 128, 64, 32, 16],
+                index=0,
+                help="Moins de couleurs = plus de compression"
+            )
+            
+            overwrite = st.checkbox(
+                "Remplacer les fichiers existants",
+                value=False,
+                help="⚠️ Attention: remplace les versions @{scale}x existantes"
+            )
+        
+        # Vérification du dossier
+        if folder_path:
+            folder_path_obj = Path(folder_path)
+            
+            # Affichage du chemin actuel avec navigation par segments
+            st.markdown("**Chemin actuel :**")
+            path_parts = folder_path_obj.parts
+            if len(path_parts) > 1:
+                breadcrumb_cols = st.columns(min(len(path_parts), 6))  # Limiter à 6 segments
+                
+                for i, (part, col) in enumerate(zip(path_parts[-6:], breadcrumb_cols)):
+                    with col:
+                        # Construire le chemin jusqu'à ce segment
+                        if i == 0 and len(path_parts) > 6:
+                            # Afficher "..." pour les parties tronquées
+                            segment_path = "/" + "/".join(path_parts[-6+i:])
+                            display_name = "..."
+                        else:
+                            segment_path = "/" + "/".join(path_parts[:len(path_parts)-6+i+1]) if len(path_parts) > 6 else "/" + "/".join(path_parts[:len(path_parts)-len(breadcrumb_cols)+i+1])
+                            display_name = part if part else "/"
+                        
+                        if st.button(display_name, key=f"breadcrumb_{i}", use_container_width=True):
+                            if Path(segment_path).exists():
+                                folder_path = segment_path
+                                st.rerun()
+            
+            if folder_path_obj.exists() and folder_path_obj.is_dir():
+                # Compter les fichiers PNG
+                png_files = list(folder_path_obj.glob("*.png"))
+                st.success(f"✅ Dossier valide : {len(png_files)} fichiers PNG trouvés")
+                
+                if png_files:
+                    # Afficher quelques exemples
+                    st.markdown("**Aperçu des fichiers :**")
+                    for i, png_file in enumerate(png_files[:5]):
+                        size_kb = png_file.stat().st_size / 1024
+                        st.text(f"• {png_file.name} ({size_kb:.1f} KB)")
+                    
+                    if len(png_files) > 5:
+                        st.text(f"... et {len(png_files) - 5} autres fichiers")
+                
+            elif folder_path_obj.exists():
+                st.error("❌ Ce chemin n'est pas un dossier")
+            else:
+                st.error("❌ Ce dossier n'existe pas")
+        
+        # Bouton de compression
+        st.markdown("---")
+        
+        if folder_path and Path(folder_path).exists():
+            col_btn, col_info = st.columns([1, 2])
+            
+            with col_btn:
+                if st.button("🚀 Lancer la compression", type="primary", use_container_width=True):
+                    # Exécuter la compression
+                    with st.spinner("🔄 Compression en cours..."):
+                        try:
+                            resultats = smart_compress_folder(
+                                folder_path,
+                                scale_factor=scale_factor,
+                                palette_size=palette_size,
+                                overwrite=overwrite
+                            )
+                            
+                            # Afficher les résultats
+                            if resultats['success']:
+                                st.success("🎉 Compression terminée avec succès !")
+                                
+                                # Métriques
+                                col_m1, col_m2, col_m3, col_m4 = st.columns(4)
+                                
+                                with col_m1:
+                                    st.metric("Images trouvées", resultats['total_found'])
+                                
+                                with col_m2:
+                                    st.metric("Images traitées", len(resultats['processed']))
+                                
+                                with col_m3:
+                                    st.metric("Images ignorées", len(resultats['skipped']))
+                                
+                                with col_m4:
+                                    if resultats['processed']:
+                                        st.metric("Réduction", f"{resultats['overall_reduction']:.1f}%")
+                                    else:
+                                        st.metric("Réduction", "0%")
+                                
+                                # Détails
+                                if resultats['processed']:
+                                    st.markdown("### ✅ Images compressées")
+                                    for item in resultats['processed']:
+                                        original_size = item['original_size'] / 1024
+                                        compressed_size = item['compressed_size'] / 1024
+                                        reduction = item['reduction_percent']
+                                        st.text(f"• {Path(item['original']).name} → {Path(item['compressed']).name}")
+                                        st.text(f"  {original_size:.1f} KB → {compressed_size:.1f} KB (-{reduction:.1f}%)")
+                                
+                                if resultats['skipped']:
+                                    with st.expander(f"📝 Images ignorées ({len(resultats['skipped'])})"):
+                                        for item in resultats['skipped']:
+                                            st.text(f"• {Path(item['original']).name} (déjà compressé)")
+                                
+                                if resultats['errors']:
+                                    st.markdown("### ❌ Erreurs")
+                                    for error in resultats['errors']:
+                                        st.error(f"• {error}")
+                            
+                            else:
+                                st.error("❌ Erreur durant la compression")
+                        
+                        except Exception as e:
+                            st.error(f"❌ Erreur: {str(e)}")
+                            st.exception(e)
+            
+            with col_info:
+                st.info(f"""
+                **Configuration actuelle :**
+                - Redimensionnement : {int(scale_factor * 100)}%
+                - Couleurs max : {palette_size}
+                - Suffixe : @{scale_factor}x
+                - Remplacer : {'Oui' if overwrite else 'Non'}
+                """)
+        
+        else:
+            st.warning("👆 Veuillez d'abord sélectionner un dossier valide")
+        
+        # Guide d'utilisation
+        with st.expander("📖 Guide d'utilisation"):
+            st.markdown("""
+            ### Comment utiliser la compression intelligente
+            
+            1. **Sélectionnez un dossier** contenant vos images PNG
+            2. **Ajustez les paramètres** selon vos besoins :
+               - **Facteur de redimensionnement** : 0.5 = 50% de la taille originale
+               - **Nombre de couleurs** : moins de couleurs = plus de compression
+            3. **Cliquez sur "Lancer la compression"**
+            
+            ### Ce qui se passe
+            - Les images originales ne sont **jamais modifiées**
+            - Les versions compressées sont créées avec le suffixe `@{factor}x`
+            - Exemple : `photo.png` → `photo@0.5x.png`
+            - Si une version compressée existe déjà, elle est ignorée (sauf si "Remplacer" est coché)
+            
+            ### Conseils
+            - Commencez avec les paramètres par défaut (50%, 256 couleurs)
+            - Pour une compression plus agressive, utilisez 30% et 64 couleurs
+            - Les images sont optimisées pour le web avec une palette de couleurs réduite
+            """)
     
     # Page Génération
     elif page == "🚀 Génération":

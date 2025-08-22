@@ -23,6 +23,9 @@ networkx>=3.5
 # HTML parsing
 html5lib>=1.1
 
+# Image processing for kanka_image module
+Pillow>=11.0.0
+
 # Additional utilities (mostly built-in but may need explicit versions)
 # zipfile - built-in
 # tempfile - built-in  
