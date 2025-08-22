@@ -7,6 +7,7 @@ Utilisation :
     python image_compressor.py image.png                    # Compresser une image
     python image_compressor.py images/ -b                   # Compresser un dossier
     python image_compressor.py image.png -s 0.3 -c 128     # Personnaliser les paramètres
+    python image_compressor.py images/ --tokens             # Créer des tokens circulaires
 
 Exemples :
     # Compresser une image à 50% avec 256 couleurs
@@ -17,6 +18,12 @@ Exemples :
     
     # Compresser avec sortie personnalisée
     python image_compressor.py image.png -o compressed_image.png
+    
+    # Créer des tokens circulaires à partir des images @0.5x 
+    python image_compressor.py images/ --tokens --token-scale 0.5
+    
+    # Créer des tokens plus petits à partir des images originales
+    python image_compressor.py images/ --tokens --token-source original --token-scale 0.3
 """
 
 import os
@@ -27,7 +34,7 @@ from pathlib import Path
 # Ajouter le répertoire parent au path pour importer kanka_image
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from kanka_image.compress import ImageCompressor, compress_folder_smart
+from kanka_image.compress import ImageCompressor, compress_folder_smart, smart_create_tokens
 from kanka_image.config import DEFAULT_SCALE_FACTOR, DEFAULT_PALETTE_SIZE
 
 def main():
@@ -100,6 +107,25 @@ Exemples d'utilisation :
         help="Écrase les fichiers compressés existants (utilisé avec --smart)"
     )
     
+    parser.add_argument(
+        "--tokens",
+        action="store_true",
+        help="Créer des tokens circulaires à partir des images compressées"
+    )
+    
+    parser.add_argument(
+        "--token-scale",
+        type=float,
+        default=0.5,
+        help="Facteur de redimensionnement pour les tokens (défaut: 0.5)"
+    )
+    
+    parser.add_argument(
+        "--token-source",
+        default="@0.5x",
+        help="Suffixe des images sources pour créer les tokens (défaut: @0.5x)"
+    )
+
     args = parser.parse_args()
     
     # Validation des arguments
@@ -216,6 +242,49 @@ Exemples d'utilisation :
             print(f"✅ Compression réussie : {output_file}")
         else:
             print("❌ Échec de la compression")
+            return 1
+    
+    # Traitement des tokens circulaires si demandé
+    if args.tokens:
+        if not is_directory:
+            print("⚠️  La création de tokens ne fonctionne qu'avec des dossiers")
+            return 1
+        
+        print(f"\n🎯 Création de tokens circulaires...")
+        print(f"📐 Paramètres tokens : {int(args.token_scale*100)}% de taille, source '{args.token_source}'")
+        
+        token_result = smart_create_tokens(
+            args.input,
+            scale_factor=args.token_scale,
+            source_suffix=args.token_source if args.token_source != "original" else ""
+        )
+        
+        if "error" not in token_result:
+            print(f"✅ Création de tokens terminée")
+            print(f"📊 Statistiques tokens :")
+            print(f"  🎯 Tokens créés : {len(token_result['processed'])}")
+            print(f"  ⏭️  Tokens ignorés : {len(token_result['skipped'])}")
+            print(f"  ❌ Erreurs : {len(token_result['errors'])}")
+            
+            if args.verbose:
+                if token_result['processed']:
+                    print("\n📋 Tokens créés :")
+                    for token_path in token_result['processed']:
+                        token_name = Path(token_path).name
+                        print(f"  🎯 {token_name}")
+                
+                if token_result['skipped']:
+                    print("\n⏭️  Tokens ignorés :")
+                    for token_path in token_result['skipped']:
+                        token_name = Path(token_path).name
+                        print(f"  ⏭️  {token_name} (déjà existant)")
+                
+                if token_result['errors']:
+                    print("\n❌ Erreurs tokens :")
+                    for error in token_result['errors']:
+                        print(f"  ❌ {error}")
+        else:
+            print(f"❌ Erreur lors de la création des tokens : {token_result['error']}")
             return 1
     
     return 0

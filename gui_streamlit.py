@@ -15,7 +15,7 @@ from main import (
 from kanka_agent.config import GENERATED_SYSTEM_DIR
 
 # Import des fonctions de compression d'images
-from kanka_image import smart_compress_folder
+from kanka_image import smart_compress_folder, smart_create_tokens
 
 # Configuration de la page
 st.set_page_config(
@@ -578,7 +578,128 @@ def main():
             - Pour une compression plus agressive, utilisez 30% et 64 couleurs
             - Les images sont optimisées pour le web avec une palette de couleurs réduite
             """)
-    
+        
+        # Section Tokens circulaires
+        st.markdown("---")
+        st.markdown('<h3 class="section-header">🎯 Création de tokens circulaires</h3>', unsafe_allow_html=True)
+        
+        st.markdown("""
+        Cette fonctionnalité crée des tokens circulaires à partir de vos images compressées, 
+        parfaits pour représenter des personnages ou objets dans vos campagnes.
+        """)
+        
+        # Configuration des tokens
+        col_token1, col_token2 = st.columns(2)
+        
+        with col_token1:
+            token_scale = st.selectbox(
+                "Taille du token",
+                options=[0.3, 0.4, 0.5, 0.6],
+                index=2,
+                format_func=lambda x: f"{int(x*100)}% de l'image source",
+                help="Taille finale du token par rapport à l'image compressée source"
+            )
+        
+        with col_token2:
+            source_suffix = st.selectbox(
+                "Images sources",
+                options=["@0.5x", "@0.3x", "@0.7x", "original"],
+                index=0,
+                help="Quelles images utiliser comme source pour créer les tokens"
+            )
+        
+        # Bouton de création des tokens
+        if folder_path and Path(folder_path).exists():
+            col_btn_token, col_info_token = st.columns([1, 2])
+            
+            with col_btn_token:
+                if st.button("🎯 Créer les tokens", type="secondary", use_container_width=True):
+                    # Créer les tokens
+                    with st.spinner("🔄 Création des tokens en cours..."):
+                        try:
+                            # Adapter le suffixe
+                            suffix_to_use = "" if source_suffix == "original" else source_suffix
+                            
+                            resultats_tokens = smart_create_tokens(
+                                folder_path,
+                                scale_factor=token_scale,
+                                source_suffix=suffix_to_use
+                            )
+                            
+                            # Afficher les résultats
+                            if "error" not in resultats_tokens:
+                                st.success("🎉 Tokens créés avec succès !")
+                                
+                                # Métriques
+                                col_tm1, col_tm2, col_tm3 = st.columns(3)
+                                
+                                with col_tm1:
+                                    st.metric("Tokens créés", len(resultats_tokens['processed']))
+                                
+                                with col_tm2:
+                                    st.metric("Tokens ignorés", len(resultats_tokens['skipped']))
+                                
+                                with col_tm3:
+                                    st.metric("Erreurs", len(resultats_tokens['errors']))
+                                
+                                # Détails
+                                if resultats_tokens['processed']:
+                                    st.markdown("### ✅ Tokens créés")
+                                    for token_path in resultats_tokens['processed']:
+                                        token_name = Path(token_path).name
+                                        st.text(f"• {token_name}")
+                                
+                                if resultats_tokens['skipped']:
+                                    with st.expander(f"📝 Tokens ignorés ({len(resultats_tokens['skipped'])})"):
+                                        for token_path in resultats_tokens['skipped']:
+                                            token_name = Path(token_path).name
+                                            st.text(f"• {token_name} (déjà existant)")
+                                
+                                if resultats_tokens['errors']:
+                                    st.markdown("### ❌ Erreurs")
+                                    for error in resultats_tokens['errors']:
+                                        st.error(f"• {error}")
+                            
+                            else:
+                                st.error(f"❌ {resultats_tokens['error']}")
+                        
+                        except Exception as e:
+                            st.error(f"❌ Erreur: {str(e)}")
+                            st.exception(e)
+            
+            with col_info_token:
+                st.info(f"""
+                **Configuration tokens :**
+                - Source : Images {source_suffix if source_suffix != 'original' else 'originales'}
+                - Taille token : {int(token_scale * 100)}%
+                - Format : _round@{token_scale}x.png
+                - Traitement : Carré + Cercle + Transparence
+                """)
+        
+        else:
+            st.warning("👆 Veuillez d'abord sélectionner un dossier valide")
+        
+        # Guide d'utilisation des tokens
+        with st.expander("📖 Guide des tokens circulaires"):
+            st.markdown("""
+            ### Comment ça fonctionne
+            
+            1. **Sélection des images sources** : Le système utilise vos images compressées
+            2. **Transformation en carré** : L'image est recadrée en gardant la partie supérieure
+            3. **Création du cercle** : Seule la partie centrale circulaire est conservée
+            4. **Transparence** : Tout ce qui est hors du cercle devient transparent
+            5. **Redimensionnement** : Le token est redimensionné selon votre choix
+            
+            ### Utilisation recommandée
+            - **Personnages** : Portraits qui s'adapteront parfaitement en rond
+            - **Objets** : Items, armes, équipements centrés
+            - **Tokens de combat** : Parfaits pour les plateaux de jeu
+            
+            ### Noms des fichiers
+            - Si l'image source est `hero@0.5x.png`
+            - Le token sera `hero_round@{token_scale}x.png`
+            """)
+
     # Page Génération
     elif page == "🚀 Génération":
         st.markdown('<h2 class="section-header">🚀 Génération de contenu IA</h2>', unsafe_allow_html=True)

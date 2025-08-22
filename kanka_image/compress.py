@@ -17,7 +17,7 @@ import os
 import sys
 from pathlib import Path
 from typing import Optional, Tuple, List
-from PIL import Image, ImageOps
+from PIL import Image, ImageOps, ImageDraw
 import logging
 
 # Configuration du logging
@@ -351,6 +351,216 @@ def compress_folder_smart(folder_path: str,
     if stats['processed']:
         logger.info(f"Réduction globale: {overall_reduction:.1f}% "
                    f"({stats['total_size_before']/1024:.1f}KB -> {stats['total_size_after']/1024:.1f}KB)")
+    
+    return stats
+
+def create_round_token(input_path: str, 
+                      output_path: Optional[str] = None,
+                      scale_factor: float = 0.5) -> bool:
+    """
+    Crée un token circulaire à partir d'une image :
+    - Transforme l'image en ratio carré (garde la partie supérieure)
+    - Garde uniquement le centre dans un cercle
+    - Met en transparent ce qui est à l'extérieur du cercle
+    - Redimensionne selon le scale_factor
+    
+    Args:
+        input_path: Chemin vers l'image source
+        output_path: Chemin de sortie (optionnel, ajoute '_round@{scale}x.png')
+        scale_factor: Facteur de redimensionnement (0.5 = 50%)
+        
+    Returns:
+        bool: True si la création a réussi
+    """
+    try:
+        input_path = Path(input_path)
+        
+        if not input_path.exists():
+            logger.error(f"Fichier introuvable: {input_path}")
+            return False
+            
+        # Génération du nom de sortie si non fourni
+        if output_path is None:
+            suffix = f"_round@{scale_factor}x"
+            output_path = input_path.parent / f"{input_path.stem}{suffix}.png"
+        else:
+            output_path = Path(output_path)
+            
+        logger.info(f"Création du token circulaire: {input_path.name} -> {output_path.name}")
+        
+        # Ouverture de l'image
+        with Image.open(input_path) as img:
+            # Conversion en RGBA pour supporter la transparence
+            if img.mode != 'RGBA':
+                img = img.convert('RGBA')
+            
+            # Étape 1: Créer un carré en gardant la partie supérieure
+            width, height = img.size
+            
+            if width != height:
+                # Prendre la dimension la plus petite comme référence
+                size = min(width, height)
+                
+                # Calculer les coordonnées pour centrer horizontalement et prendre le haut
+                left = (width - size) // 2
+                top = 0  # Garder la partie supérieure
+                right = left + size
+                bottom = top + size
+                
+                # Recadrer l'image
+                img = img.crop((left, top, right, bottom))
+            
+            # Étape 2: Redimensionner selon le scale_factor
+            if scale_factor != 1.0:
+                new_size = int(img.size[0] * scale_factor)
+                img = img.resize((new_size, new_size), Image.Resampling.LANCZOS)
+            
+            # Étape 3: Créer le masque circulaire
+            size = img.size[0]  # Image carrée maintenant
+            
+            # Créer un masque circulaire
+            mask = Image.new('L', (size, size), 0)  # 'L' = niveau de gris
+            draw = ImageDraw.Draw(mask)
+            
+            # Dessiner un cercle blanc (255) qui touche tous les bords
+            draw.ellipse((0, 0, size, size), fill=255)
+            
+            # Étape 4: Appliquer le masque pour créer la transparence
+            # Créer une nouvelle image avec transparence
+            result = Image.new('RGBA', (size, size), (0, 0, 0, 0))
+            
+            # Copier les pixels de l'image originale là où le masque est blanc
+            for y in range(size):
+                for x in range(size):
+                    if mask.getpixel((x, y)) > 0:  # Si le pixel est dans le cercle
+                        result.putpixel((x, y), img.getpixel((x, y)))
+            
+            # Étape 5: Optimiser et sauvegarder
+            # Pour les images avec transparence, pas de quantification automatique
+            # car PIL ne supporte pas bien la quantification RGBA
+            
+            # Sauvegarder directement avec optimisation PNG
+            result.save(output_path, 
+                       format='PNG',
+                       optimize=True,
+                       compress_level=9)
+            
+        # Vérifier la taille des fichiers
+        original_size = input_path.stat().st_size
+        compressed_size = output_path.stat().st_size
+        reduction = (1 - compressed_size / original_size) * 100
+        
+        logger.info(f"Token créé: {original_size/1024:.1f}KB -> {compressed_size/1024:.1f}KB "
+                   f"(réduction: {reduction:.1f}%)")
+        
+        return True
+        
+    except Exception as e:
+        logger.error(f"Erreur lors de la création du token: {e}")
+        return False
+
+def smart_create_tokens(folder_path: str,
+                       scale_factor: float = 0.5,
+                       source_suffix: str = "@0.5x") -> dict:
+    """
+    Crée des tokens circulaires pour toutes les images compressées d'un dossier
+    
+    Args:
+        folder_path: Chemin vers le dossier contenant les images
+        scale_factor: Facteur de redimensionnement pour les tokens
+        source_suffix: Suffix des images sources à utiliser (par défaut les images compressées)
+        
+    Returns:
+        dict: Statistiques du traitement
+    """
+    folder_path = Path(folder_path)
+    
+    if not folder_path.exists() or not folder_path.is_dir():
+        logger.error(f"Dossier introuvable: {folder_path}")
+        return {"error": "Dossier introuvable"}
+    
+    # Rechercher les images sources
+    if source_suffix == "":
+        # Pour les originales, prendre toutes les PNG sauf celles avec des suffixes connus
+        all_images = list(folder_path.glob("*.png"))
+        # Exclure les images avec des suffixes de compression ou tokens
+        excluded_patterns = ["@", "_round@", "_compressed", "_thumb"]
+        source_images = []
+        for img in all_images:
+            if not any(pattern in img.stem for pattern in excluded_patterns):
+                source_images.append(img)
+        suffix_desc = "originales"
+    else:
+        # Pour les compressées, utiliser le pattern avec suffixe mais exclure les tokens
+        pattern = f"*{source_suffix}.png"
+        all_matches = list(folder_path.glob(pattern))
+        # Exclure les tokens (qui contiennent "_round@")
+        source_images = []
+        for img in all_matches:
+            if "_round@" not in img.stem:
+                source_images.append(img)
+        suffix_desc = f"avec le suffixe '{source_suffix}'"
+    
+    if not source_images:
+        logger.warning(f"Aucune image {suffix_desc} trouvée dans {folder_path}")
+        return {"processed": [], "skipped": [], "errors": []}
+    
+    stats = {
+        "processed": [],
+        "skipped": [],
+        "errors": [],
+        "total_size_before": 0,
+        "total_size_after": 0
+    }
+    
+    logger.info(f"Création de tokens pour {len(source_images)} images dans {folder_path}")
+    
+    for img_path in source_images:
+        try:
+            # Générer le nom du token
+            if source_suffix == "":
+                # Pour les originales, utiliser le nom complet
+                base_name = img_path.stem
+            else:
+                # Pour les compressées, enlever le suffixe
+                base_name = img_path.stem.replace(source_suffix, "")
+            
+            token_suffix = f"_round@{scale_factor}x"
+            token_path = img_path.parent / f"{base_name}{token_suffix}.png"
+            
+            # Vérifier si le token existe déjà
+            if token_path.exists():
+                logger.info(f"Token déjà existant, ignoré: {token_path.name}")
+                stats["skipped"].append(str(token_path))
+                continue
+            
+            # Créer le token
+            original_size = img_path.stat().st_size
+            
+            if create_round_token(img_path, token_path, scale_factor):
+                token_size = token_path.stat().st_size
+                stats["processed"].append(str(token_path))
+                stats["total_size_before"] += original_size
+                stats["total_size_after"] += token_size
+            else:
+                stats["errors"].append(str(img_path))
+                
+        except Exception as e:
+            logger.error(f"Erreur lors du traitement de {img_path}: {e}")
+            stats["errors"].append(str(img_path))
+    
+    # Calculer la réduction globale
+    if stats['total_size_before'] > 0:
+        overall_reduction = (1 - stats['total_size_after'] / stats['total_size_before']) * 100
+    else:
+        overall_reduction = 0
+    
+    stats['overall_reduction'] = overall_reduction
+    
+    # Log final
+    logger.info(f"Création de tokens terminée pour {folder_path}")
+    logger.info(f"Tokens créés: {len(stats['processed'])}, Ignorés: {len(stats['skipped'])}, "
+               f"Erreurs: {len(stats['errors'])}")
     
     return stats
 
